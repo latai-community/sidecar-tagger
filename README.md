@@ -46,10 +46,9 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 ### 3. Install Dependencies
 
-Currently, the project uses standard library modules. Future versions will require:
+Install the required Python packages:
 ```bash
-# Example for future dependencies
-# pip install pydantic pdfplumber openpyxl
+pip install -r requirements.txt
 ```
 
 ### 4. Run the CLI
