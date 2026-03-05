@@ -37,6 +37,13 @@ Sidecar-tagger is an automated metadata generation system. It follows a "sidecar
 - **NEVER**: Commit generated `.json` sidecars to the core repository; they should be ignored via `.gitignore` in test folders.
 
 ---
+
+## Assets
+
+- **Project Logo**: `.gemini/skills/sidecar-tagger/assets/sidecar-tagger-logo.png`
+
+---
+
 ## Directory Structure
 
 ```text

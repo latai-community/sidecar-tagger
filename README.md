@@ -1,3 +1,5 @@
+![Sidecar-tagger Logo](.gemini/skills/sidecar-tagger/assets/sidecar-tagger-logo.png)
+
 # Sidecar-tagger
 
 Sidecar-tagger is an automated metadata generation system that follows the "sidecar pattern." It analyzes source files (PDFs, spreadsheets, images) and generates a consolidated `sidecar.json` file containing LLM-derived insights, such as document type, language, tags, and confidence scores.
