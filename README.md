@@ -1,8 +1,10 @@
-<img src=".gemini/skills/sidecar-tagger/assets/sidecar-tagger-logo.png" alt="Sidecar-tagger Logo" width="150">
-
 # Sidecar-tagger
 
 Sidecar-tagger is an automated metadata generation system that follows the "sidecar pattern." It analyzes source files (PDFs, spreadsheets, images) and generates a consolidated `sidecar.json` file containing LLM-derived insights, such as document type, language, tags, and confidence scores.
+
+<p align="center">
+  <img src=".gemini/skills/sidecar-tagger/assets/sidecar-tagger-logo.png" alt="Sidecar-tagger Logo" width="150">
+</p>
 
 ## Key Features
 
@@ -143,4 +145,4 @@ The tool will skip missing files and print a warning in the console. Use `--verb
 
 ## License
 
-This project is licensed under the terms provided in the repository.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
