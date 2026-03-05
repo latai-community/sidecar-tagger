@@ -29,6 +29,7 @@ The testing skill ensures that every component (CLI/SDK) meets the quality stand
 - **ALWAYS**: Use mock files or small samples for PDF/XLSX/IMG to avoid heavy dependencies in tests.
 - **ALWAYS**: Assert that the output file follows the naming convention `<file>.<ext>.json`.
 - **NEVER**: Run tests that require real LLM API keys without a "mock" or "dry-run" option.
+- **ALWAYS**: Save the test files in the `tests/mocks/` directory.
 
 ### Metadata Validation (Evals)
 

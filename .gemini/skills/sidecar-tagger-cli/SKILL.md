@@ -59,5 +59,5 @@ The Sidecar-tagger CLI is the primary entry point for automated metadata extract
 - [ ] Every flag has a clear, English help description.
 - [ ] Positional arguments support multiple files (batch processing).
 - [ ] `--verbose` mode actually outputs internal logic steps.
-- [ ] Output filenames follow the pattern: `<original_name>.<ext>.json`.
+- [ ] Metadata is consolidated into a single `sidecar.json`.
 - [ ] The `--help` command displays all options correctly.

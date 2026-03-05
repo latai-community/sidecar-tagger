@@ -27,7 +27,7 @@ Sidecar-tagger is an automated metadata generation system. It follows a "sidecar
 ### Project Architecture
 
 - **ALWAYS**: Keep a strict separation between CLI logic (argparse) and SDK logic (processing).
-- **ALWAYS**: Follow the "one-to-one" sidecar rule: `filename.ext` -> `filename.ext.json`.
+- **ALWAYS**: Generate a consolidated `sidecar.json` containing metadata for all input files in the batch.
 - **NEVER**: Modify the original source files; the tool is strictly read-only for inputs.
 
 ### Workflow Orchestration
