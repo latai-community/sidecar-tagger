@@ -1,4 +1,4 @@
-![Sidecar-tagger Logo](.gemini/skills/sidecar-tagger/assets/sidecar-tagger-logo.png)
+<img src=".gemini/skills/sidecar-tagger/assets/sidecar-tagger-logo.png" alt="Sidecar-tagger Logo" width="150">
 
 # Sidecar-tagger
 
