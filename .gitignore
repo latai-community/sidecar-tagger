@@ -21,3 +21,6 @@ tests/mocks/sample*.pdf
 tests/mocks/sample*.xlsx
 tests/mocks/sample*.png
 tests/mocks/sidecar.json
+
+# Temporary Files
+TASKS.md
