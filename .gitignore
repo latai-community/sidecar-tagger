@@ -1,0 +1,23 @@
+# Sidecar-tagger - Generated metadata
+sidecar.json
+*.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Project-specific samples
+tests/mocks/sample*.pdf
+tests/mocks/sample*.xlsx
+tests/mocks/sample*.png
+tests/mocks/sidecar.json
