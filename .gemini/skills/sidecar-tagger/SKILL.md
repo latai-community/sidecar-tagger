@@ -37,7 +37,6 @@ Sidecar-tagger is an automated metadata generation system. It follows a "sidecar
 - **NEVER**: Commit generated `.json` sidecars to the core repository; they should be ignored via `.gitignore` in test folders.
 
 ---
-
 ## Directory Structure
 
 ```text
@@ -50,6 +49,15 @@ sidecar-tagger/
 └── SKILL.md            # This orchestrator
 ```
 
+---
+
+## Media Assets
+For more information on media assets, logos and screenshots, see the [Asset directory](./assets/).
+
+- **ALWAYS**: Use the provided assets for the project.
+- **NEVER**: Use assets from other projects.
+- **ALWAYS**: Reference the image assets using markdown syntax.
+- **NEVER**: Copy the image assets to the project to avoid duplication.
 ---
 
 ## QA Checklist (Global)
