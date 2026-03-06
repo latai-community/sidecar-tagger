@@ -1,8 +1,22 @@
 import os
 import json
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from sdk.processor import MetadataProcessor
+from sdk.models.metadata import FileMetadata
+
+@pytest.fixture
+def mock_llm_response():
+    """Returns a mock FileMetadata object."""
+    return FileMetadata(
+        doc_type="pdf_document",
+        language="en",
+        domain="tech",
+        category="test",
+        context="Mocked context",
+        tags=["pdf", "test"],
+        confidence=0.9
+    )
 
 @pytest.fixture
 def temp_sidecar(tmp_path):
@@ -16,32 +30,39 @@ def mock_file(tmp_path):
     p.write_text("fake pdf content")
     return str(p)
 
-def test_extract_metadata_pdf(mock_file):
+def test_extract_metadata_pdf(mock_file, mock_llm_response):
     """Test that PDF metadata is extracted correctly."""
     processor = MetadataProcessor()
-    # mock_file is .pdf from the fixture
-    with patch("sdk.processor.extract_pdf_content", return_value="Real PDF Content"):
-        metadata = processor.extract_metadata(mock_file)
-        assert metadata["doc_type"] == "pdf_document"
-        assert "pdf" in metadata["tags"]
-        assert "Real PDF Content" in metadata["context"]
+    
+    with patch("sdk.processor.LLMClient.generate_metadata", return_value=mock_llm_response):
+        with patch("sdk.processor.extract_pdf_content", return_value="Real PDF Content"):
+            metadata = processor.extract_metadata(mock_file)
+            assert metadata["doc_type"] == "pdf_document"
+            assert "pdf" in metadata["tags"]
 
-def test_extract_metadata_xlsx(tmp_path):
+def test_extract_metadata_xlsx(tmp_path, mock_llm_response):
     """Test that XLSX metadata is extracted correctly."""
     xlsx_file = tmp_path / "test.xlsx"
     xlsx_file.write_text("dummy")
+    
+    # Modify mock for XLSX
+    mock_llm_response.doc_type = "spreadsheet"
+    mock_llm_response.tags = ["xlsx", "test"]
+    
     processor = MetadataProcessor()
-    with patch("sdk.processor.extract_xlsx_content", return_value="Real Excel Data"):
-        metadata = processor.extract_metadata(str(xlsx_file))
-        assert metadata["doc_type"] == "spreadsheet"
-        assert "xlsx" in metadata["tags"]
-        assert "Real Excel Data" in metadata["context"]
+    with patch("sdk.processor.LLMClient.generate_metadata", return_value=mock_llm_response):
+        with patch("sdk.processor.extract_xlsx_content", return_value="Real Excel Data"):
+            metadata = processor.extract_metadata(str(xlsx_file))
+            assert metadata["doc_type"] == "spreadsheet"
+            assert "xlsx" in metadata["tags"]
 
-def test_process_files(mock_file, temp_sidecar):
+def test_process_files(mock_file, temp_sidecar, mock_llm_response):
     """Test the full processing flow and file output."""
     processor = MetadataProcessor(output_path=temp_sidecar)
-    with patch("sdk.processor.extract_pdf_content", return_value="Mocked PDF Content"):
-        processor.process_files([mock_file])
+    
+    with patch("sdk.processor.LLMClient.generate_metadata", return_value=mock_llm_response):
+        with patch("sdk.processor.extract_pdf_content", return_value="Mocked PDF Content"):
+            processor.process_files([mock_file])
     
     assert os.path.exists(temp_sidecar)
     

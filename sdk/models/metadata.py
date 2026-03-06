@@ -30,3 +30,4 @@ class FileMetadata(BaseModel):
     tags: List[str] = Field(default_factory=list, description="Extracted keywords or classification tags")
     content_date: Optional[datetime] = Field(None, description="ISO-8601 date extracted from the document content (e.g., invoice date)")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Overall confidence score for the LLM extraction")
+    embedding_vector: Optional[List[float]] = Field(None, description="Local vector representation for similarity search")

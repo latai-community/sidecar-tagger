@@ -22,11 +22,13 @@ Focus: Integrating AI intelligence and output validation.
 - [x] **SDK: Prompt Engineering**: Design specialized system prompts to enforce strict JSON schema output.
 - [x] **SDK: Validation**: Implement a validation layer to check LLM output against Pydantic models.
 
-## Phase 3: Robustness & Testing
-Focus: Stability, error handling, and CLI verification.
-- [ ] **CLI: Error Handling**: Implement graceful degradation for missing files or API timeouts.
-- [ ] **Tests: Unit Tests**: Achieve >80% coverage for individual parsers.
-- [ ] **Tests: Integration Tests**: Validate the full E2E flow from CLI command to JSON output.
+## Phase 3: Hybrid Tagging & Robustness (Current Priority)
+Focus: Local classification, distributed sampling, and error handling.
+- [ ] **SDK: Local Embeddings**: Integrate a lightweight library (e.g., FastText or Sentence-Transformers ONNX) for $0 cost vector generation.
+- [ ] **SDK: Distributed Sampling**: Implement "Start-Middle-End" chunking for large files to create "Identity Vectors".
+- [ ] **SDK: Conditional LLM**: Logic to trigger Gemini only when local confidence is < 0.7 or a summary is required.
+- [ ] **Schema: Vector Support**: Update `sidecar.json` to include the `embedding_vector` for local similarity searches.
+- [ ] **CLI: Error Handling**: Graceful degradation for corrupted files or API timeouts.
 
 ## Phase 4: Optimization & Scale
 Focus: Performance tuning and cost management.

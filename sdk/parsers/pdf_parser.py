@@ -11,17 +11,33 @@ def extract_pdf_content(file_path: str) -> str:
     full_text = []
     try:
         with pdfplumber.open(file_path) as pdf:
-            # Extract metadata (author, creator, dates, etc.)
-            metadata = pdf.metadata
+            total_pages = len(pdf.pages)
             
-            # Extract text from each page
-            for page in pdf.pages:
+            # Sampling strategy: First 3, Middle 3, Last 3
+            # Ensures we capture context from the whole document without loading it all.
+            pages_to_read = set()
+            
+            # Start
+            for i in range(min(3, total_pages)):
+                pages_to_read.add(i)
+            
+            # Middle
+            mid = total_pages // 2
+            for i in range(max(0, mid - 1), min(total_pages, mid + 2)):
+                pages_to_read.add(i)
+                
+            # End
+            for i in range(max(0, total_pages - 3), total_pages):
+                pages_to_read.add(i)
+            
+            # Extract text from the unique set of sampled pages
+            for page_idx in sorted(list(pages_to_read)):
+                page = pdf.pages[page_idx]
                 text = page.extract_text()
                 if text:
-                    full_text.append(text)
+                    full_text.append(f"--- Page {page_idx + 1} ---\n{text}")
         
-        # Combine extracted text
-        return "\n".join(full_text)
+        return "\n\n".join(full_text)
     except Exception as e:
         # Log or handle parsing errors specifically
         return f"Error parsing PDF: {str(e)}"

@@ -12,10 +12,28 @@ def extract_xlsx_content(file_path: str) -> str:
     summary_parts = []
     try:
         workbook = openpyxl.load_workbook(file_path, data_only=True, read_only=True)
+        sheet_names = workbook.sheetnames
+        total_sheets = len(sheet_names)
         
-        summary_parts.append(f"Workbook contains {len(workbook.sheetnames)} sheets: {', '.join(workbook.sheetnames)}")
+        summary_parts.append(f"Workbook contains {total_sheets} sheets: {', '.join(sheet_names)}")
         
-        for sheet_name in workbook.sheetnames:
+        # Sampling strategy: First 2, Middle 1, Last 2 sheets
+        sheets_to_read = set()
+        
+        # Start
+        for i in range(min(2, total_sheets)):
+            sheets_to_read.add(sheet_names[i])
+            
+        # Middle
+        mid = total_sheets // 2
+        sheets_to_read.add(sheet_names[mid])
+        
+        # End
+        for i in range(max(0, total_sheets - 2), total_sheets):
+            sheets_to_read.add(sheet_names[i])
+            
+        # Process unique sampled sheets
+        for sheet_name in sorted(list(sheets_to_read), key=lambda x: sheet_names.index(x)):
             sheet = workbook[sheet_name]
             # Basic summary per sheet
             rows = sheet.max_row if sheet.max_row else 0
