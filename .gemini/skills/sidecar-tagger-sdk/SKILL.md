@@ -55,10 +55,11 @@ The Sidecar-tagger SDK is the core engine responsible for reading file content a
   "category": "string",
   "context": "string",
   "tags": ["array", "of", "strings"],
-  "date_detected": "ISO-8601",
+  "content_date": "ISO-8601",
   "confidence": 0.0
 }
 ```
+
 ---
 
 ## QA Checklist (SDK)
@@ -66,4 +67,4 @@ The Sidecar-tagger SDK is the core engine responsible for reading file content a
 - [ ] XLSX extraction captures sheet names as part of the context.
 - [ ] Image processing uses a Vision-capable model for tag generation.
 - [ ] Token usage is optimized to avoid unnecessary costs.
-- [ ] date_detected uses the system's current UTC time.
+- [ ] content_date is extracted from the document content when available.

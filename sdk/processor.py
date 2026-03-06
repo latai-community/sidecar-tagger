@@ -24,7 +24,7 @@ class MetadataProcessor:
             category="general",
             context=f"Content extracted from {filename}",
             tags=["tag1", "tag2"],
-            date_detected=datetime.now(),
+            content_date=datetime.now(), # Mocked as today for now
             confidence=0.9
         )
         

@@ -125,7 +125,7 @@ The generated JSON follows this structure:
     "category": "string",
     "context": "string",
     "tags": ["array", "of", "strings"],
-    "date_detected": "ISO-8601",
+    "content_date": "ISO-8601",
     "confidence": 0.0
   }
 }

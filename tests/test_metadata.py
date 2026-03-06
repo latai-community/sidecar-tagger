@@ -12,12 +12,26 @@ def test_valid_metadata():
         "category": "accounts_payable",
         "context": "Cloud service invoice",
         "tags": ["cloud", "azure"],
+        "content_date": datetime.now(),
         "confidence": 0.95
     }
     metadata = FileMetadata(**data)
     assert metadata.doc_type == "invoice"
     assert metadata.confidence == 0.95
-    assert isinstance(metadata.date_detected, datetime)
+    assert isinstance(metadata.content_date, datetime)
+
+def test_optional_date():
+    """Test that content_date is optional."""
+    data = {
+        "doc_type": "invoice",
+        "language": "en",
+        "domain": "finance",
+        "category": "accounts_payable",
+        "context": "context",
+        "confidence": 0.9
+    }
+    metadata = FileMetadata(**data)
+    assert metadata.content_date is None
 
 def test_invalid_confidence():
     """Test that an invalid confidence score (out of range) raises a ValidationError."""
@@ -51,9 +65,10 @@ def test_json_serialization():
         domain="finance",
         category="accounts_payable",
         context="context",
+        content_date=datetime.now(),
         confidence=0.9
     )
     json_data = metadata.model_dump(mode='json')
-    assert isinstance(json_data["date_detected"], str)
+    assert isinstance(json_data["content_date"], str)
     # Check if it follows ISO 8601 roughly (contains 'T')
-    assert 'T' in json_data["date_detected"]
+    assert 'T' in json_data["content_date"]

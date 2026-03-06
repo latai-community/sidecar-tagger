@@ -24,3 +24,7 @@ tests/mocks/sidecar.json
 
 # Temporary Files
 TASKS.md
+
+# Test artifacts
+.pytest_cache/
+*.pdf

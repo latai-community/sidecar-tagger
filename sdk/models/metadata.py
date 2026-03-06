@@ -16,7 +16,7 @@ class FileMetadata(BaseModel):
                 "category": "accounts_payable",
                 "context": "Invoice from Supplier X for cloud services",
                 "tags": ["cloud", "azure", "billing"],
-                "date_detected": "2024-05-22T10:00:00Z",
+                "content_date": "2024-05-22T10:00:00Z",
                 "confidence": 0.95
             }
         }
@@ -28,5 +28,5 @@ class FileMetadata(BaseModel):
     category: str = Field(..., description="Sub-classification or department")
     context: str = Field(..., description="Brief summary or contextual description of the file content")
     tags: List[str] = Field(default_factory=list, description="Extracted keywords or classification tags")
-    date_detected: datetime = Field(default_factory=datetime.now, description="ISO-8601 timestamp of when the analysis was performed")
+    content_date: Optional[datetime] = Field(None, description="ISO-8601 date extracted from the document content (e.g., invoice date)")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Overall confidence score for the LLM extraction")
