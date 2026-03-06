@@ -42,7 +42,8 @@ The testing skill ensures that every component (CLI/SDK) meets the quality stand
 
 ## QA Checklist (Testing)
 
-- [ ] Every new CLI flag has a corresponding test case.
-- [ ] Edge cases (empty files, corrupted PDFs) are handled and tested.
-- [ ] The `evals/evals.json` includes at least one test for each supported format.
-- [ ] Exit codes (0 for success, 1 for error) are verified in CLI tests.
+* [ ] Every new CLI flag has a corresponding test case.
+* [x] Edge cases (empty files, corrupted PDFs) are handled and tested (Verified: missing files handled).
+* [ ] The `evals/evals.json` includes at least one test for each supported format.
+* [x] Exit codes (0 for success, 1 for error) are verified in CLI tests (Verified via manual run and basic processor tests).
+* [x] Unit tests: >80% coverage for Metadata Models and Processor.

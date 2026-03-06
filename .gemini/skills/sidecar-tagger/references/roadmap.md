@@ -4,14 +4,14 @@ This document tracks the development lifecycle of the Sidecar-tagger project. It
 
 ## Project Status Overview
 - **Current Phase:** Phase 1: Foundation
-- **Last Updated:** 2024-05-22
-- **Overall Completion:** 15%
+- **Last Updated:** 2026-03-05
+- **Overall Completion:** 20%
 
 ---
 
 ## Phase 1: Foundation (Current Priority)
 Focus: Establishing core parsing capabilities and data schemas.
-- [ ] **SDK: Pydantic Models**: Define robust schemas in `sdk/models/metadata.py` for PDF, XLSX, and Images.
+- [x] **SDK: Pydantic Models**: Define robust schemas in `sdk/models/metadata.py` for PDF, XLSX, and Images.
 - [ ] **SDK: PDF Parser**: Implement text and metadata extraction using `pdfplumber`.
 - [ ] **SDK: XLSX Parser**: Implement data extraction and sheet analysis using `openpyxl`.
 - [ ] **SDK: Image Parser**: Implement vision-based analysis for image files (JPG/PNG).

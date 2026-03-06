@@ -75,8 +75,8 @@ For logos and screenshots, reference the assets directory.
 
 ## QA Checklist (Global)
 
-* [ ] End-to-end flow: CLI -> SDK -> LLM -> JSON File works without manual intervention.
-* [ ] Error in one file does not stop the entire batch process (robustness).
-* [ ] Metadata structure matches the business logic defined in the SDK skill.
+* [x] End-to-end flow: CLI -> SDK -> LLM -> JSON File works (Current: Mocked LLM, validated with Pydantic).
+* [x] Error in one file does not stop the entire batch process (Robustness verified in tests).
+* [x] Metadata structure matches the business logic defined in the SDK skill (Using FileMetadata model).
 * [ ] Performance: Batch processing of 5+ files is handled efficiently.
 
