@@ -61,3 +61,10 @@ The Sidecar-tagger CLI is the primary entry point for automated metadata extract
 - [ ] `--verbose` mode actually outputs internal logic steps.
 - [ ] Metadata is consolidated into a single `sidecar.json`.
 - [ ] The `--help` command displays all options correctly.
+
+---
+
+## Related Skills
+- **[sidecar-tagger](../sidecar-tagger/SKILL.md)**: Global project orchestrator and roadmap.
+- **[sidecar-tagger-sdk](../sidecar-tagger-sdk/SKILL.md)**: Core engine for metadata extraction.
+- **[sidecar-tagger-test](../sidecar-tagger-test/SKILL.md)**: Validation of CLI flags and execution flow.

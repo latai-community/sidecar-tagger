@@ -47,3 +47,10 @@ The testing skill ensures that every component (CLI/SDK) meets the quality stand
 * [ ] The `evals/evals.json` includes at least one test for each supported format.
 * [x] Exit codes (0 for success, 1 for error) are verified in CLI tests (Verified via manual run and basic processor tests).
 * [x] Unit tests: >80% coverage for Metadata Models and Processor.
+
+---
+
+## Related Skills
+- **[sidecar-tagger](../sidecar-tagger/SKILL.md)**: Global project orchestrator and roadmap.
+- **[sidecar-tagger-sdk](../sidecar-tagger-sdk/SKILL.md)**: Target of unit tests and LLM evaluations.
+- **[sidecar-tagger-cli](../sidecar-tagger-cli/SKILL.md)**: Target of integration tests and flag validation.

@@ -80,3 +80,10 @@ For logos and screenshots, reference the assets directory.
 * [x] Metadata structure matches the business logic defined in the SDK skill (Using FileMetadata model).
 * [ ] Performance: Batch processing of 5+ files is handled efficiently.
 
+---
+
+## Related Skills
+- **[sidecar-tagger-cli](./sidecar-tagger-cli/SKILL.md)**: Command-line interface and user interaction logic.
+- **[sidecar-tagger-sdk](./sidecar-tagger-sdk/SKILL.md)**: Core metadata extraction and LLM orchestration engine.
+- **[sidecar-tagger-test](./sidecar-tagger-test/SKILL.md)**: Quality assurance, unit testing, and evaluation framework.
+

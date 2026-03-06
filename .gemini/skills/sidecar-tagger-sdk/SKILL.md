@@ -68,3 +68,10 @@ The Sidecar-tagger SDK is the core engine responsible for reading file content a
 - [ ] Image processing uses a Vision-capable model for tag generation.
 - [ ] Token usage is optimized to avoid unnecessary costs.
 - [ ] content_date is extracted from the document content when available.
+
+---
+
+## Related Skills
+- **[sidecar-tagger](../sidecar-tagger/SKILL.md)**: Global project orchestrator and roadmap.
+- **[sidecar-tagger-cli](../sidecar-tagger-cli/SKILL.md)**: CLI interface that consumes this SDK.
+- **[sidecar-tagger-test](../sidecar-tagger-test/SKILL.md)**: Testing suite for parser validation and LLM output quality.
