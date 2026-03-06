@@ -95,22 +95,23 @@ sidecar-tagger/
 │   └── main.py         # CLI Runner
 ├── sdk/                # Core processing engine
 │   ├── processor.py    # Metadata aggregation logic
-│   ├── parsers/        # (Planned) Format-specific extraction
-│   └── models/         # (Planned) Schema definitions
-├── tests/              # Test suite
-│   └── mocks/          # Sample files for testing
-├── .gemini/            # AI Agent skills and configuration
+│   ├── parsers/        # Format-specific extraction (PDF, XLSX, Image)
+│   └── models/         # Pydantic schema definitions
+├── tests/              # Test suite (Unit and Integration)
+├── .gemini/            # AI Agent skills and roadmap
 └── .gitignore          # Version control exclusions
 ```
 
 ### Data Flow
 
 1. **Input**: User provides file paths via the CLI.
-2. **Validation**: CLI verifies file existence and output permissions.
-3. **Processing**: `MetadataProcessor` (SDK) iterates through files.
-4. **Extraction**: (Mocked) Metadata is generated based on file attributes.
-5. **Consolidation**: Metadata for all files is mapped into a single dictionary.
-6. **Output**: The dictionary is serialized to `sidecar.json`.
+2. **Processing**: `MetadataProcessor` (SDK) identifies file formats.
+3. **Extraction**:
+    - **PDF**: Uses `pdfplumber` to extract text.
+    - **XLSX**: Uses `openpyxl` to extract sheet data and samples.
+    - **Image**: Uses `Pillow` to extract dimensions and EXIF data.
+4. **LLM Analysis**: (Planned Phase 2) Content is sent to Gemini for intelligent tagging.
+5. **Consolidation**: Metadata for all files is mapped into a single `sidecar.json`.
 
 ### Metadata Schema
 

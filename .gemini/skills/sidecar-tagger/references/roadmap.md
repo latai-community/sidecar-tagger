@@ -3,20 +3,20 @@
 This document tracks the development lifecycle of the Sidecar-tagger project. It serves as the source of truth for project progress and task prioritization.
 
 ## Project Status Overview
-- **Current Phase:** Phase 1: Foundation
+- **Current Phase:** Phase 2: LLM & Orchestration
 - **Last Updated:** 2026-03-05
-- **Overall Completion:** 20%
+- **Overall Completion:** 33%
 
 ---
 
-## Phase 1: Foundation (Current Priority)
+## Phase 1: Foundation (COMPLETED)
 Focus: Establishing core parsing capabilities and data schemas.
 - [x] **SDK: Pydantic Models**: Define robust schemas in `sdk/models/metadata.py` for PDF, XLSX, and Images.
-- [ ] **SDK: PDF Parser**: Implement text and metadata extraction using `pdfplumber`.
-- [ ] **SDK: XLSX Parser**: Implement data extraction and sheet analysis using `openpyxl`.
-- [ ] **SDK: Image Parser**: Implement vision-based analysis for image files (JPG/PNG).
+- [x] **SDK: PDF Parser**: Implement text and metadata extraction using `pdfplumber`.
+- [x] **SDK: XLSX Parser**: Implement data extraction and sheet analysis using `openpyxl`.
+- [x] **SDK: Image Parser**: Implement vision-based analysis for image files (JPG/PNG).
 
-## Phase 2: LLM & Orchestration
+## Phase 2: LLM & Orchestration (Current Priority)
 Focus: Integrating AI intelligence and output validation.
 - [ ] **SDK: LLM Integration**: Service to manage API keys (.env) and provider routing (Gemini/OpenAI).
 - [ ] **SDK: Prompt Engineering**: Design specialized system prompts to enforce strict JSON schema output.

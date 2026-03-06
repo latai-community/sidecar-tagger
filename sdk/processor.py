@@ -3,6 +3,9 @@ import json
 from datetime import datetime
 
 from sdk.models.metadata import FileMetadata
+from sdk.parsers.pdf_parser import extract_pdf_content
+from sdk.parsers.xlsx_parser import extract_xlsx_content
+from sdk.parsers.image_parser import extract_image_metadata
 
 class MetadataProcessor:
     """Core SDK processor for metadata extraction."""
@@ -12,23 +15,41 @@ class MetadataProcessor:
         self.metadata_store = {}
 
     def extract_metadata(self, file_path: str) -> dict:
-        """Mock extraction logic to fulfill the prompt."""
-        # In a real scenario, this would call format-specific parsers and an LLM.
+        """Calls format-specific parsers and (eventually) an LLM."""
         filename = os.path.basename(file_path)
+        ext = os.path.splitext(file_path)[1].lower()
+
+        content = ""
+        doc_type = "document"
+        tags = ["general"]
+        
+        if ext == ".pdf":
+            content = extract_pdf_content(file_path)
+            doc_type = "pdf_document"
+            tags = ["pdf"]
+        elif ext in [".xlsx", ".xls"]:
+            content = extract_xlsx_content(file_path)
+            doc_type = "spreadsheet"
+            tags = ["xlsx", "finance"]
+        elif ext in [".jpg", ".jpeg", ".png", ".webp", ".bmp"]:
+            content = extract_image_metadata(file_path)
+            doc_type = "image"
+            tags = ["image", "visual"]
+        else:
+            content = f"Mocked content for {filename}"
         
         # Creating a FileMetadata instance for validation
         metadata = FileMetadata(
-            doc_type="document",
+            doc_type=doc_type,
             language="en",
             domain="unknown",
             category="general",
-            context=f"Content extracted from {filename}",
-            tags=["tag1", "tag2"],
-            content_date=datetime.now(), # Mocked as today for now
+            context=f"Analyzed {filename}. Info: {content[:100].replace('\n', ' ')}...",
+            tags=tags,
+            content_date=datetime.now(),
             confidence=0.9
         )
         
-        # We use mode='json' to ensure that datetime and other types are serialized to strings
         return metadata.model_dump(mode='json')
 
     def process_files(self, file_paths):
