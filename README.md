@@ -1,18 +1,22 @@
 # Sidecar-tagger
 
-Sidecar-tagger is an automated metadata generation system that follows the "sidecar pattern." It analyzes source files (PDFs, spreadsheets, images) and generates a consolidated `sidecar.json` file containing LLM-derived insights, such as document type, language, tags, and confidence scores.
+Sidecar-tagger is an **atomic metadata engine** designed to serve as the high-performance core for semantic search UIs and OS-level file management systems. It analyzes source files (PDFs, spreadsheets, images) and generates a persistent, semantically-enriched index.
 
 <p align="center">
   <img src=".gemini/skills/sidecar-tagger/assets/sidecar-tagger-logo.png" alt="Sidecar-tagger Logo" width="150">
 </p>
 
+## Core Philosophy: The Atomic Motor
+Unlike a full search engine, Sidecar-tagger focuses on being a **resilient and efficient data generator**. Its "product" is a consolidated index (JSON or SQLite) containing deep contextual insights and semantic vectors, ready to be consumed by any third-party UI or search interface.
+
 ## Key Features
 
-- **Multi-format Support**: Designed to handle PDF, XLSX, and Image files.
-- **Consolidated Metadata**: Aggregates insights from multiple files into a single `sidecar.json` manifest.
-- **LLM-Powered Insights**: (Planned) Uses Large Language Models to extract deep contextual metadata.
-- **CLI Interface**: Robust command-line tool for batch processing and configuration.
-- **Strict Validation**: Metadata is validated against a structured schema to ensure consistency.
+- **Semantic Cache (Embedding First)**: Uses local vectors to identify similar documents and reuse metadata, drastically reducing API costs and latency.
+- **Multimodal Analysis**: Automatically uploads PDFs or Images to Gemini 3 for visual analysis when text extraction is insufficient (e.g., scanned documents).
+- **Local Embeddings (ONNX)**: Generates 384-dimensional semantic vectors locally ($0 cost) using `FastEmbed` for instant similarity searches.
+- **Recursive Indexing**: Process entire directory trees with a single command, unifying results into a structured manifest.
+- **Robust Error Handling**: Graceful fallback logic with a `needs_review` flag for unreadable or ambiguous files.
+- **LLM-Powered Intelligence**: Deep analysis of document context, domain, and tags using Google Gemini 3.
 
 ---
 
@@ -104,14 +108,15 @@ sidecar-tagger/
 
 ### Data Flow
 
-1. **Input**: User provides file paths via the CLI.
-2. **Processing**: `MetadataProcessor` (SDK) identifies file formats.
-3. **Extraction**:
-    - **PDF**: Uses `pdfplumber` to extract text.
-    - **XLSX**: Uses `openpyxl` to extract sheet data and samples.
-    - **Image**: Uses `Pillow` to extract dimensions and EXIF data.
-4. **LLM Analysis**: (Planned Phase 2) Content is sent to Gemini for intelligent tagging.
-5. **Consolidation**: Metadata for all files is mapped into a single `sidecar.json`.
+1. **Input**: User provides file/directory paths via the CLI.
+2. **Identification**: `MetadataProcessor` (SDK) identifies file formats and recursively scans directories.
+3. **Semantic Cache Check**: Generates a local vector and searches for similar documents in the existing index to avoid redundant LLM calls.
+4. **Extraction**:
+    - **PDF**: Extracts text via `pdfplumber`. If text is missing, renders page thumbnails for visual analysis.
+    - **XLSX**: Extracts sheet data and samples via `openpyxl`.
+    - **Image**: Extracts technical metadata via `Pillow`.
+5. **Multimodal LLM Analysis**: Sends content (and optionally the full PDF or Image) to Gemini 3 for deep semantic tagging.
+6. **Consolidation**: Stores metadata and local vectors into a persistent index.
 
 ### Metadata Schema
 
@@ -119,15 +124,17 @@ The generated JSON follows this structure:
 
 ```json
 {
-  "filename.ext": {
+  "path/to/file.ext": {
     "doc_type": "string",
     "language": "string",
     "domain": "string",
     "category": "string",
     "context": "string",
     "tags": ["array", "of", "strings"],
-    "content_date": "ISO-8601",
-    "confidence": 0.0
+    "content_date": "string (ISO-8601 or partial)",
+    "confidence": 0.0,
+    "needs_review": false,
+    "embedding_vector": [0.123, -0.456, "..."]
   }
 }
 ```

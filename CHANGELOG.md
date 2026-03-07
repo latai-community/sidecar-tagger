@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
 - **Test Robustness**: Implemented LLM mocking in `tests/test_processor.py` to ensure unit and integration tests run independently of API keys or network status.
 
 ### Changed
+- **Project Vision (ADR)**: Redefined Sidecar-tagger as an **Atomic Metadata Engine**. The project will focus exclusively on high-performance index generation (JSON/SQLite) to serve as a backend for search UIs and OS integrations, rather than implementing search logic itself.
 - **Environment Handling**: Updated `load_dotenv(override=True)` to ensure .env changes are applied immediately.
 - **Dependencies**: Upgraded to `pydantic>=2.9.2`, `google-generativeai`, and added `fastembed`.
 - **Roadmap**: Progress updated to 80%.

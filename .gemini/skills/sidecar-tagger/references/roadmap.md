@@ -32,11 +32,13 @@ Focus: Local classification, distributed sampling, and error handling.
 - [x] **Robustness: Multimodal Fallback**: Implemented native PDF upload and vision analysis for scanned or difficult documents.
 - [x] **Schema: Review Flag**: Added `needs_review` field to mark unreadable or ambiguous files.
 
-## Phase 4: Optimization & Scale
-Focus: Performance tuning and cost management.
-- [ ] **SDK: Performance**: Implement `asyncio` or multiprocessing for batch processing.
-- [ ] **SDK: Token Optimization**: Implement smart chunking to reduce LLM costs on large documents.
-- [ ] **CLI: Progress UI**: Add a progress bar (Rich/Tqdm) for better user feedback during batch runs.
+## Phase 4: Performance & Integration (Atomic Motor)
+Focus: Transforming the tagger into a high-performance engine for search UIs and OS-level integration.
+- [ ] **Performance: Multiprocessing**: Implement parallel file processing to index entire drives at maximum CPU speed.
+- [ ] **Storage: SQLite Export**: Add support for exporting metadata to a local SQLite database for instant querying by UIs.
+- [ ] **Integration: Watch Mode**: Implement a background observer (e.g., via `watchdog`) to auto-tag new files in real-time.
+- [ ] **Optimization: Token Budgeting**: Smart chunking and sampling to minimize LLM costs while maintaining high accuracy.
+- [ ] **CLI: Progress Dashboard**: Advanced TUI (Rich) to show real-time indexing progress, throughput, and cache hit rates.
 
 ---
 
