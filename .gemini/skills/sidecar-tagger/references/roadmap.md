@@ -5,7 +5,7 @@ This document tracks the development lifecycle of the Sidecar-tagger project. It
 ## Project Status Overview
 - **Current Phase:** Phase 3: Robustness & Testing
 - **Last Updated:** 2026-03-06
-- **Overall Completion:** 50%
+- **Overall Completion:** 80%
 
 ---
 
@@ -24,11 +24,11 @@ Focus: Integrating AI intelligence and output validation.
 
 ## Phase 3: Hybrid Tagging & Robustness (Current Priority)
 Focus: Local classification, distributed sampling, and error handling.
-- [ ] **SDK: Local Embeddings**: Integrate a lightweight library (e.g., FastText or Sentence-Transformers ONNX) for $0 cost vector generation.
-- [ ] **SDK: Distributed Sampling**: Implement "Start-Middle-End" chunking for large files to create "Identity Vectors".
-- [ ] **SDK: Conditional LLM**: Logic to trigger Gemini only when local confidence is < 0.7 or a summary is required.
-- [ ] **Schema: Vector Support**: Update `sidecar.json` to include the `embedding_vector` for local similarity searches.
-- [ ] **CLI: Error Handling**: Graceful degradation for corrupted files or API timeouts.
+- [x] **SDK: Local Embeddings**: Integrate a lightweight library (FastEmbed ONNX) for $0 cost vector generation.
+- [x] **SDK: Distributed Sampling**: Implement "Start-Middle-End" chunking for large files.
+- [x] **SDK: Conditional LLM**: Logic to trigger Gemini only when local confidence is < 0.9 or a summary is required (Semantic Cache).
+- [x] **Schema: Vector Support**: Update `sidecar.json` to include the `embedding_vector` for local similarity searches.
+- [x] **CLI: Error Handling**: Added retries and 429 backoff logic.
 
 ## Phase 4: Optimization & Scale
 Focus: Performance tuning and cost management.

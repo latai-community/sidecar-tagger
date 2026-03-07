@@ -7,6 +7,7 @@ Every new functionality, bug fix, or refactor MUST be documented in the `CHANGEL
 *   **What**: Clearly state what was changed.
 *   **Why**: Explain the rationale behind the change (the "reasoning").
 *   **Impact**: Note any breaking changes or required configuration updates (e.g., new `.env` variables).
+*   **ADR Compliance**: Whenever an ADR (Architecture Decision Record) is added or modified, it MUST be explicitly documented in the `CHANGELOG.md` to maintain a clear history of architectural evolution.
 
 ## 2. Quality: Mandatory Testing
 Tests must be executed before considering a task finished.
