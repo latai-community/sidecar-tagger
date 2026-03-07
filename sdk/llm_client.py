@@ -1,76 +1,108 @@
+"""
+Title: LLM Client
+Abstract: Handles communication with the LLM provider (Gemini).
+Why: Manages prompts, context injection, and API/multimodal communication.
+Dependencies: google.generativeai, json, logging, sdk.models.metadata
+"""
+
 import os
 import json
 import time
+import logging
 import google.generativeai as genai
+from typing import Optional, List, Dict
 from dotenv import load_dotenv
-from sdk.models.metadata import FileMetadata
+
+from sdk.models.metadata import FileMetadata, LocalContext, ClusterHint
+from sdk.exceptions import LLMClientError
 
 load_dotenv(override=True)
+logger = logging.getLogger("LLMClient")
 
 class LLMClient:
     """Handles communication with the LLM provider."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.api_key = os.getenv("GEMINI_API_KEY")
-        self.model_name = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
+        self.model_name = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 
         if not self.api_key:
-            print("Warning: GEMINI_API_KEY not found in environment.")
+            logger.warning("GEMINI_API_KEY not found in environment.")
         else:
             genai.configure(api_key=self.api_key)
             self.model = genai.GenerativeModel(self.model_name)
 
-    def generate_metadata(self, content: str, image_path: str = None, pdf_path: str = None, retries=3) -> FileMetadata:
-        """Sends content (and optionally an image or PDF) to the LLM and returns validated FileMetadata."""
+    def generate_metadata(
+        self, 
+        content: str, 
+        image_path: Optional[str] = None, 
+        pdf_path: Optional[str] = None,
+        local_context: Optional[LocalContext] = None,
+        cluster_hint: Optional[ClusterHint] = None,
+        retries: int = 3
+    ) -> FileMetadata:
+        """
+        Layer 4: Cognitive Analysis with Context Injection.
+        """
         if not self.api_key:
             return self._get_fallback_metadata("API Key missing")
+
+        # --- Construct the Super Prompt (Context Injection) ---
+        context_block = ""
+        if local_context:
+            context_block += f"""
+            SYSTEM CONTEXT (Objective Facts):
+            - Filename: {local_context.filename}
+            - Path Keywords: {', '.join(local_context.path_keywords)}
+            - Creation Year: {local_context.creation_date[:4] if local_context.creation_date else 'Unknown'}
+            - Owner: {local_context.owner}
+            """
+        
+        hint_block = ""
+        if cluster_hint and cluster_hint.similarity_score > 0.7:
+             hint_block += f"""
+            NEIGHBORHOOD HINTS (Collective Intelligence):
+            - This file is similar to others in the same folder.
+            - Suggested Category: {cluster_hint.suggested_category}
+            - Suggested Tags: {', '.join(cluster_hint.suggested_tags)}
+            - Anomaly Status: {'Likely Anomaly' if cluster_hint.is_anomaly else 'Consistent with group'}
+            """
 
         prompt = f"""
         Analyze the following document content and extract structured metadata.
         
-        CRITICAL INSTRUCTIONS:
-        1. If a PDF or Image is provided, it is your PRIMARY source.
-        2. If the document appears digitally 'blank' but the file size is significant, it may be a scanned document or have hidden layers. Use your vision capabilities to identify any faint text, logos, or visual styles (like cookbook layouts, diagrams, etc.).
-        3. Even if you cannot find text, try to classify the document based on visual composition.
-        4. Focus on extracting tags based on the actual topics and visual elements you observe.
-        
-        You MUST return a valid JSON object matching this schema:
-        {{
-            "doc_type": "string (e.g., invoice, report, cookbook, manual, textbook, art_book)",
-            "language": "string (ISO 639-1 code, e.g., 'en', 'es', 'it')",
-            "domain": "string (e.g., Gastronomy, Tech, Legal, Health, Art)",
-            "category": "string (e.g., recipes, instructions, business_records)",
-            "context": "string (one-sentence summary of what you observe in the document)",
-            "tags": ["array", "of", "keywords"],
-            "content_date": "ISO-8601 string (if found, otherwise null)",
-            "confidence": 0.0,
-            "needs_review": boolean (set to true if the document is blank, unreadable, or very ambiguous)
-        }}
+        {context_block}
+        {hint_block}
 
-        Extracted textual content (may be empty if scanned):
-        {content[:3000]}
+        CRITICAL INSTRUCTIONS:
+        1. Use the 'SYSTEM CONTEXT' to ground your analysis (e.g., if path says 'Invoices', bias towards financial documents).
+        2. Use 'NEIGHBORHOOD HINTS' as a strong suggestion, but override if the content clearly contradicts them.
+        3. Extract domain, category, context, and tags.
+        
+        You MUST return a valid JSON object matching the FileMetadata schema.
+        
+        Extracted Content:
+        {content[:4000]}
         """
 
         # Prepare multimodal parts
         parts = [prompt]
         
-        # Handle PDF upload (Native Gemini PDF support)
         if pdf_path and os.path.exists(pdf_path):
             try:
-                print(f"Uploading PDF to Gemini for visual analysis: {os.path.basename(pdf_path)}...")
+                logger.info(f"Uploading PDF for visual analysis: {os.path.basename(pdf_path)}...")
                 uploaded_file = genai.upload_file(path=pdf_path, display_name=os.path.basename(pdf_path))
                 parts.append(uploaded_file)
             except Exception as e:
-                print(f"Warning: Could not upload PDF to Gemini: {e}")
+                logger.warning(f"Could not upload PDF to Gemini: {e}")
         
-        # Handle Image fallback/standalone
         elif image_path and os.path.exists(image_path):
             try:
                 from PIL import Image
                 img = Image.open(image_path)
                 parts.append(img)
             except Exception as e:
-                print(f"Warning: Could not load image for LLM: {e}")
+                logger.warning(f"Could not load image for LLM: {e}")
 
         for attempt in range(retries):
             try:
@@ -85,31 +117,23 @@ class LLMClient:
 
             except Exception as e:
                 if "429" in str(e) and attempt < retries - 1:
-                    wait_time = (attempt + 1) * 15
-                    print(f"Rate limit reached. Waiting {wait_time}s... (Attempt {attempt + 1}/{retries})")
+                    wait_time = (attempt + 1) * 10
+                    logger.warning(f"Rate limit. Waiting {wait_time}s... (Attempt {attempt + 1}/{retries})")
                     time.sleep(wait_time)
                     continue
 
-                print(f"Error calling LLM on attempt {attempt + 1}: {e}")
+                logger.error(f"LLM Error on attempt {attempt + 1}: {e}")
                 if attempt == retries - 1:
                     return self._get_fallback_metadata(str(e))
 
         return self._get_fallback_metadata("Max retries reached")
 
-
     def _get_fallback_metadata(self, error_msg: str) -> FileMetadata:
-        """Returns a default metadata object when LLM fails without leaking technical errors."""
-        # Log the technical error to console for the developer
-        print(f"DEBUG: LLM Fallback triggered. Original error: {error_msg}")
-        
+        """Returns a default metadata object when LLM fails."""
         return FileMetadata(
             doc_type="unknown",
-            language="unknown",
-            domain="unknown",
-            category="unknown",
-            context="Metadata extraction failed. This document requires manual classification.",
-            tags=["needs_review"],
-            content_date=None,
+            context=f"Metadata extraction failed: {error_msg}",
+            tags=["error"],
             confidence=0.0,
             needs_review=True
         )

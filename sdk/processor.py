@@ -1,117 +1,235 @@
+"""
+Title: Metadata Processor Core (v2)
+Abstract: Orchestrates the 5-Layer Contextual Engine (Hash -> Context -> Cluster -> Embedding -> AI).
+Dependencies: os, json, logging, sdk.parsers, sdk.llm_client, sdk.embeddings_client, sdk.exceptions, sdk.utils.hashing, sdk.context
+LLM-Hints: This is the brain of the system.
+"""
+
 import os
 import json
-from datetime import datetime
+import logging
+from typing import List, Dict, Any, Optional
 
-from sdk.models.metadata import FileMetadata
-from sdk.parsers.pdf_parser import extract_pdf_content
-from sdk.parsers.xlsx_parser import extract_xlsx_content
-from sdk.parsers.image_parser import extract_image_metadata
+from sdk.models.metadata import FileMetadata, LocalContext, ClusterHint
+from sdk.parsers import PdfParser, XlsxParser, ImageParser, TxtParser
 from sdk.llm_client import LLMClient
 from sdk.embeddings_client import LocalEmbeddings
+from sdk.exceptions import SidecarException, ParserError, LLMClientError, CacheError
+from sdk.utils.hashing import calculate_sha256
+from sdk.context.os_extractor import OSContextExtractor
+from sdk.context.clustering import ClusterManager
+
+# Configuration for Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+logger = logging.getLogger("SidecarProcessor")
 
 class MetadataProcessor:
-    """Core SDK processor with Semantic Cache (Embedding First) logic."""
+    """
+    Orchestrates the 5-Layer Contextual Engine.
+    """
 
-    def __init__(self, output_path="sidecar.json", similarity_threshold=0.9):
+    def __init__(self, output_path: str = "sidecar.json", similarity_threshold: float = 0.9) -> None:
         self.output_path = output_path
         self.similarity_threshold = similarity_threshold
-        self.metadata_store = self._load_existing_store()
+        
+        # Core Components
+        self.metadata_store: Dict[str, Dict[str, Any]] = self._load_existing_store()
+        self.hash_index: Dict[str, str] = self._build_hash_index() # Maps hash -> file_path
+        
         self.llm_client = LLMClient()
         self.embeddings_client = LocalEmbeddings()
+        self.os_extractor = OSContextExtractor()
+        self.cluster_manager = ClusterManager()
+        
+        # Parser Registry
+        self._parsers = {
+            ".pdf": PdfParser(),
+            ".xlsx": XlsxParser(),
+            ".xls": XlsxParser(),
+            ".txt": TxtParser(),
+            ".md": TxtParser(),
+            ".log": TxtParser(),
+            ".jpg": ImageParser(),
+            ".jpeg": ImageParser(),
+            ".png": ImageParser(),
+            ".webp": ImageParser(),
+            ".bmp": ImageParser()
+        }
 
-    def _load_existing_store(self) -> dict:
-        """Loads the existing metadata store from disk if it exists."""
-        if os.path.exists(self.output_path):
-            try:
-                with open(self.output_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
-            except Exception as e:
-                print(f"Warning: Could not load existing sidecar: {e}")
-        return {}
+    def _load_existing_store(self) -> Dict[str, Any]:
+        if not os.path.exists(self.output_path):
+            return {}
+        try:
+            with open(self.output_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            logger.warning(f"Could not load store: {e}")
+            return {}
 
-    def _find_similar_metadata(self, current_vector: list) -> dict:
-        """Searches the store for a vector with high similarity (> threshold)."""
+    def _build_hash_index(self) -> Dict[str, str]:
+        """Builds an index of {sha256: file_path} from existing metadata for Layer 0."""
+        index = {}
+        for path, meta in self.metadata_store.items():
+            file_hash = meta.get("file_hash")
+            if file_hash:
+                index[file_hash] = path
+        return index
+
+    def _find_similar_vector(self, current_vector: List[float]) -> Optional[Dict[str, Any]]:
+        """Layer 3: Semantic Cache Check."""
         for path, metadata in self.metadata_store.items():
             stored_vector = metadata.get("embedding_vector")
             if stored_vector:
-                similarity = self.embeddings_client.calculate_similarity(current_vector, stored_vector)
-                if similarity >= self.similarity_threshold:
-                    # Found a semantic match!
-                    print(f" -> Semantic Cache Hit! (Similarity: {similarity:.2f})")
-                    # We return a copy but update the confidence to reflect similarity
-                    cached_metadata = metadata.copy()
-                    cached_metadata["confidence"] = similarity
-                    return cached_metadata
+                try:
+                    similarity = self.embeddings_client.calculate_similarity(current_vector, stored_vector)
+                    if similarity >= self.similarity_threshold:
+                        logger.info(f" -> Layer 3 Hit: Semantic Match with {path} ({similarity:.2f})")
+                        cached = metadata.copy()
+                        cached["confidence"] = similarity
+                        # We keep original context/tags but might want to mark it as derived
+                        return cached
+                except CacheError:
+                    continue
         return None
 
-    def extract_metadata(self, file_path: str) -> dict:
-        """Calls parsers, generates embedding, and decides whether to use LLM or Cache."""
-        filename = os.path.basename(file_path)
-        ext = os.path.splitext(file_path)[1].lower()
-
-        content = ""
-        image_to_send = None
+    def process_files(self, file_paths: List[str]) -> None:
+        """Main batch processing loop."""
         
-        if ext == ".pdf":
-            # PDF returns a dict with text and thumbnail_path
-            pdf_data = extract_pdf_content(file_path)
-            content = pdf_data["text"]
-            image_to_send = pdf_data["thumbnail_path"]
-        elif ext in [".xlsx", ".xls"]:
-            content = extract_xlsx_content(file_path)
-        elif ext in [".jpg", ".jpeg", ".png", ".webp", ".bmp"]:
-            # For standalone images, the image itself is the primary content
-            content = extract_image_metadata(file_path) # Get technical info
-            image_to_send = file_path # Send the image to Gemini
-        else:
-            content = f"Generic content for {filename}"
+        # Layer 2 Pre-calculation: Analyze neighborhood
+        logger.info(" -> Layer 2: Analyzing file clusters...")
+        self.cluster_manager.analyze_neighborhood(file_paths)
         
-        # 1. Generate local vector FIRST (Semantic Cache step)
-        # Note: If no text is found, we use a descriptive placeholder to generate a vector
-        vector_content = content if content.strip() else f"Image-based document: {filename}"
-        print(f"Generating identity vector for {filename}...")
-        vector = self.embeddings_client.generate_vector(vector_content)
-
-        # 2. Check for matches in our local memory
-        cached_metadata = self._find_similar_metadata(vector)
-        if cached_metadata:
-            # Clean up temporary thumbnail if it was created
-            if image_to_send and ext == ".pdf":
-                try: os.remove(image_to_send)
-                except: pass
-            return cached_metadata
-
-        # 3. Cache miss: Call the LLM
-        print(f" -> Cache Miss. Consulting {self.llm_client.model_name} for {filename}...")
-        
-        # We pass pdf_path if it's a PDF to allow native multimodal analysis
-        pdf_to_send = file_path if ext == ".pdf" else None
-        metadata = self.llm_client.generate_metadata(content, image_path=image_to_send, pdf_path=pdf_to_send)
-        
-        # 4. Attach the vector and return
-        metadata_dict = metadata.model_dump(mode='json')
-        metadata_dict["embedding_vector"] = vector
-
-        # Cleanup temporary PDF thumbnail
-        if image_to_send and ext == ".pdf":
-            try: os.remove(image_to_send)
-            except: pass
-        
-        return metadata_dict
-
-    def process_files(self, file_paths):
-        """Processes multiple files and saves them into a consolidated sidecar.json."""
         for path in file_paths:
             if os.path.isfile(path):
-                # We store the dictionary representation for JSON serialization
-                self.metadata_store[path] = self.extract_metadata(path)
+                try:
+                    metadata = self.extract_metadata(path)
+                    self.metadata_store[path] = metadata
+                    
+                    # Update hash index immediately for subsequent duplicates in the same batch
+                    if metadata.get("file_hash"):
+                        self.hash_index[metadata["file_hash"]] = path
+                        
+                except Exception as e:
+                    logger.error(f"Failed to process {path}: {e}")
+                    self.metadata_store[path] = self._get_error_metadata(str(e))
             else:
-                print(f"Warning: File {path} not found.")
+                logger.warning(f"Skipping invalid path: {path}")
 
         self.save_sidecar()
 
-    def save_sidecar(self):
-        """Writes the consolidated metadata store to disk."""
-        with open(self.output_path, "w", encoding="utf-8") as f:
-            json.dump(self.metadata_store, f, indent=4)
-        print(f"Successfully generated {self.output_path}")
+    def extract_metadata(self, file_path: str) -> Dict[str, Any]:
+        """The 5-Layer Pipeline Implementation."""
+        
+        filename = os.path.basename(file_path)
+        logger.info(f"Processing: {filename}")
+
+        try:
+            # --- LAYER 0: Binary Identity (Hash Gate) ---
+            file_hash = calculate_sha256(file_path)
+            if file_hash in self.hash_index:
+                original_path = self.hash_index[file_hash]
+                logger.info(f" -> Layer 0 Hit: Exact duplicate of {original_path}")
+                
+                # Clone metadata from original
+                original_meta = self.metadata_store.get(original_path, {}).copy()
+                original_meta["file_hash"] = file_hash
+                original_meta["duplicate_of"] = original_path
+                # Update local context for the duplicate (it has its own path/dates)
+                original_meta["local_context"] = self.os_extractor.extract(file_path).model_dump()
+                
+                return original_meta
+
+            # --- LAYER 1: Context Enrichment ---
+            local_context = self.os_extractor.extract(file_path)
+            
+            # --- LAYER 2: Cluster Hint ---
+            cluster_hint = self.cluster_manager.get_hint(file_path)
+            if cluster_hint.cluster_id:
+                 logger.info(f" -> Layer 2 Hint: Member of {cluster_hint.cluster_id} (Sim: {cluster_hint.similarity_score:.2f})")
+
+            # Extract Content (Parsing)
+            ext = local_context.file_extension
+            content = ""
+            image_to_send = None
+            
+            parser = self._parsers.get(ext)
+            if parser:
+                res = parser.extract(file_path)
+                content = res.get("text", "")
+                image_to_send = res.get("thumbnail_path")
+            else:
+                content = f"Generic content for {filename}"
+
+            # --- LAYER 3: Semantic Identity ---
+            # Generate vector using content + context hints
+            # (For now we just embed content, v2.1 could embed context too)
+            vector_content = content if content.strip() else f"{filename} {local_context.parent_folder}"
+            vector = self.embeddings_client.generate_vector(vector_content)
+            
+            cached_meta = self._find_similar_vector(vector)
+            if cached_meta:
+                self._cleanup(image_to_send, ext)
+                cached_meta["file_hash"] = file_hash
+                cached_meta["local_context"] = local_context.model_dump()
+                cached_meta["cluster_hint"] = cluster_hint.model_dump()
+                cached_meta["embedding_vector"] = vector # Update vector just in case
+                return cached_meta
+
+            # --- LAYER 4: Cognitive Analysis (AI) ---
+            logger.info(f" -> Layer 4: Deep Analysis with Gemini...")
+            
+            # Inject Context into LLM Client
+            pdf_path = file_path if ext == ".pdf" else None
+            
+            metadata = self.llm_client.generate_metadata(
+                content=content,
+                image_path=image_to_send,
+                pdf_path=pdf_path,
+                local_context=local_context, # NEW
+                cluster_hint=cluster_hint    # NEW
+            )
+            
+            # Merge Results
+            result = metadata.model_dump(mode='json')
+            result["file_hash"] = file_hash
+            result["embedding_vector"] = vector
+            result["local_context"] = local_context.model_dump()
+            result["cluster_hint"] = cluster_hint.model_dump()
+
+            self._cleanup(image_to_send, ext)
+            return result
+
+        except (ParserError, LLMClientError, CacheError) as e:
+            logger.error(f"Failed to process {filename}: {str(e)}")
+            return self._get_error_metadata(str(e))
+        except Exception as e:
+            logger.critical(f"Unexpected system error processing {filename}: {str(e)}")
+            return self._get_error_metadata(f"Internal Error: {str(e)}")
+
+    def save_sidecar(self) -> None:
+        try:
+            with open(self.output_path, "w", encoding="utf-8") as f:
+                json.dump(self.metadata_store, f, indent=4)
+            logger.info(f"Saved manifest to {self.output_path}")
+        except Exception as e:
+            logger.error(f"Save failed: {e}")
+
+    def _cleanup(self, img: Optional[str], ext: str) -> None:
+        """Helper to remove temporary files."""
+        if img and ext == ".pdf" and os.path.exists(img):
+            try:
+                os.remove(img)
+            except: pass
+
+    def _get_error_metadata(self, msg: str) -> Dict[str, Any]:
+        """Helper to generate structured error response."""
+        return {
+            "doc_type": "error",
+            "context": f"Failed: {msg}",
+            "needs_review": True,
+            "tags": ["error"],
+            "confidence": 0.0
+        }
