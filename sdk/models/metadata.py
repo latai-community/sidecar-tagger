@@ -28,6 +28,7 @@ class FileMetadata(BaseModel):
     category: Optional[str] = Field("unknown", description="Sub-classification or department")
     context: Optional[str] = Field("Unknown content", description="Brief summary of the file content")
     tags: List[str] = Field(default_factory=list, description="Extracted keywords or classification tags")
-    content_date: Optional[datetime] = Field(None, description="ISO-8601 date extracted from the document content")
+    content_date: Optional[str] = Field(None, description="Date extracted from the document content (may be partial)")
     confidence: float = Field(0.0, ge=0.0, le=1.0, description="Overall confidence score for the LLM extraction")
+    needs_review: bool = Field(False, description="Flagged for manual review if content is unreadable or extraction failed")
     embedding_vector: Optional[List[float]] = Field(None, description="Local vector representation for similarity search")

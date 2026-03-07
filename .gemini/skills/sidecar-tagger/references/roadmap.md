@@ -3,9 +3,9 @@
 This document tracks the development lifecycle of the Sidecar-tagger project. It serves as the source of truth for project progress and task prioritization.
 
 ## Project Status Overview
-- **Current Phase:** Phase 3: Robustness & Testing
+- **Current Phase:** Phase 4: Optimization & Scale
 - **Last Updated:** 2026-03-06
-- **Overall Completion:** 80%
+- **Overall Completion:** 90%
 
 ---
 
@@ -29,6 +29,8 @@ Focus: Local classification, distributed sampling, and error handling.
 - [x] **SDK: Conditional LLM**: Logic to trigger Gemini only when local confidence is < 0.9 or a summary is required (Semantic Cache).
 - [x] **Schema: Vector Support**: Update `sidecar.json` to include the `embedding_vector` for local similarity searches.
 - [x] **CLI: Error Handling**: Added retries and 429 backoff logic.
+- [x] **Robustness: Multimodal Fallback**: Implemented native PDF upload and vision analysis for scanned or difficult documents.
+- [x] **Schema: Review Flag**: Added `needs_review` field to mark unreadable or ambiguous files.
 
 ## Phase 4: Optimization & Scale
 Focus: Performance tuning and cost management.

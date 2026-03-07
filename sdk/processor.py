@@ -81,8 +81,8 @@ class MetadataProcessor:
                 except: pass
             return cached_metadata
 
-        # 3. Cache miss: Call the LLM (Gemini 3)
-        print(f" -> Cache Miss. Consulting Gemini 3 for {filename}...")
+        # 3. Cache miss: Call the LLM
+        print(f" -> Cache Miss. Consulting {self.llm_client.model_name} for {filename}...")
         
         # We pass pdf_path if it's a PDF to allow native multimodal analysis
         pdf_to_send = file_path if ext == ".pdf" else None

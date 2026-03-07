@@ -27,19 +27,24 @@ class LLMClient:
 
         prompt = f"""
         Analyze the following document content and extract structured metadata.
-        If an image or PDF file is provided, use it as the primary source of truth (especially for scanned or visual documents).
-        Focus on extracting tags based on the actual content, topics, and visual elements.
+        
+        CRITICAL INSTRUCTIONS:
+        1. If a PDF or Image is provided, it is your PRIMARY source.
+        2. If the document appears digitally 'blank' but the file size is significant, it may be a scanned document or have hidden layers. Use your vision capabilities to identify any faint text, logos, or visual styles (like cookbook layouts, diagrams, etc.).
+        3. Even if you cannot find text, try to classify the document based on visual composition.
+        4. Focus on extracting tags based on the actual topics and visual elements you observe.
         
         You MUST return a valid JSON object matching this schema:
         {{
-            "doc_type": "string (e.g., invoice, report, contract, manual, cookbook, textbook)",
-            "language": "string (ISO 639-1 code, e.g., 'en', 'es')",
-            "domain": "string (e.g., Finance, Tech, Legal, Health, Gastronomy)",
-            "category": "string (e.g., business_document, technical_spec, internal_memo, recipes)",
-            "context": "string (one-sentence summary of what the document is about)",
+            "doc_type": "string (e.g., invoice, report, cookbook, manual, textbook, art_book)",
+            "language": "string (ISO 639-1 code, e.g., 'en', 'es', 'it')",
+            "domain": "string (e.g., Gastronomy, Tech, Legal, Health, Art)",
+            "category": "string (e.g., recipes, instructions, business_records)",
+            "context": "string (one-sentence summary of what you observe in the document)",
             "tags": ["array", "of", "keywords"],
             "content_date": "ISO-8601 string (if found, otherwise null)",
-            "confidence": 0.0 (float between 0 and 1)
+            "confidence": 0.0,
+            "needs_review": boolean (set to true if the document is blank, unreadable, or very ambiguous)
         }}
 
         Extracted textual content (may be empty if scanned):
@@ -93,15 +98,18 @@ class LLMClient:
 
 
     def _get_fallback_metadata(self, error_msg: str) -> FileMetadata:
-        """Returns a default metadata object when LLM fails."""
-        from datetime import datetime
+        """Returns a default metadata object when LLM fails without leaking technical errors."""
+        # Log the technical error to console for the developer
+        print(f"DEBUG: LLM Fallback triggered. Original error: {error_msg}")
+        
         return FileMetadata(
             doc_type="unknown",
             language="unknown",
             domain="unknown",
             category="unknown",
-            context=f"Error: {error_msg}",
-            tags=["error"],
+            context="Metadata extraction failed. This document requires manual classification.",
+            tags=["needs_review"],
             content_date=None,
-            confidence=0.0
+            confidence=0.0,
+            needs_review=True
         )

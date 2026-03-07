@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **Native PDF Multimodal Analysis**: Updated `LLMClient` to upload PDF files directly to Gemini 3. This allows the AI to "see" scanned documents and images within PDFs when text extraction fails.
+- **Multimodal Prompting**: Enhanced system prompts to guide Gemini in analyzing visual elements and hidden layers in complex documents.
+- **Robust Metadata Schema**: Updated `FileMetadata` to handle partial dates and null fields, ensuring the system doesn't crash on incomplete AI responses.
 - **Gemini 3 Integration**: Upgraded default model to `gemini-3-flash-preview` for smarter metadata extraction.
 - **Semantic Cache (Embedding First)**: New logic in `MetadataProcessor` that checks for similar documents locally before calling the LLM.
 - **Local Embeddings (ONNX)**: Integrated `FastEmbed` for high-performance 384-dimensional vector generation on CPU ($0 cost).
