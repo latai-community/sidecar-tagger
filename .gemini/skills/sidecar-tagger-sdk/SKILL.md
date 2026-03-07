@@ -1,77 +1,82 @@
 ---
 name: sidecar-tagger-sdk
 description: >
-  Specifies the SDK behavior and architecture for the Sidecar-tagger metadata extraction. 
-  Covers file parsing (PDF, XLSX, Images), LLM prompting, and metadata structured output.
+  Specifies the SDK behavior and architecture for the Sidecar-tagger v2 metadata extraction. 
+  Covers the 5-Layer pipeline (Hash, Context, Cluster, Embedding, AI) and core parsing logic.
   Trigger: When working on sidecar-tagger/sdk/ or implementing extraction logic for specific file types.
 metadata:
-  version: "1.0"
+  version: "2.0"
   author: latai-community
   scope: [sidecar-tagger/sdk]
 ---
 
 ## Overview
 
-The Sidecar-tagger SDK is the core engine responsible for reading file content and using LLMs to generate structured metadata. It must handle multi-modal inputs and return a strictly validated JSON object.
+The Sidecar-tagger SDK v2 is a **Context-Aware Engine** that implements a 5-Layer pipeline to minimize AI costs and maximize precision. It enforces strict engineering standards inspired by Java (Strict typing, Interface-driven design).
 
-| Format | Parsing Strategy | Target Data |
-|--------|------------------|-------------|
-| **PDF** | Text & Layout Extraction | Reports, whitepapers, contracts |
-| **XLSX**| Tabular Data Mapping | Sales data, logs, spreadsheets |
-| **Images**| Vision-to-Text / OCR | Infographics, screenshots, photos |
+### The 5-Layer Pipeline
+
+| Layer | Component | Objective | Strategy |
+|-------|-----------|-----------|----------|
+| **0** | **Hash Gate** | Deduplication | SHA-256 binary identity check. |
+| **1** | **Context Builder** | Fact Finding | OS stats, parent folders, internal metadata props. |
+| **2** | **Cluster Manager** | Neighbor Wisdom | Fuzzy matching of names to group similar files. |
+| **3** | **Embedding Check** | Semantic Cache | Local ONNX vectors to detect reused content. |
+| **4** | **Cognitive Analysis**| AI Extraction | Gemini analysis injected with Layers 1 & 2 context. |
 
 ---
 
 ## Critical Rules
 
+### Architecture & Standards
+
+- **ALWAYS**: Adhere to the **`sidecar-engine-standards`** (Strict Typing, ABCs, custom exceptions).
+- **ALWAYS**: Inherit all parsers from `BaseParser` and raise `ParserError` for failures.
+- **ALWAYS**: Use `logging` instead of `print` for internal SDK operations.
+
 ### Content Extraction
 
-- **ALWAYS**: Use format-specific parsers (e.g., `PyPDF2`/`pdfplumber` for PDF, `openpyxl` for XLSX).
-- **ALWAYS**: Truncate or chunk content if it exceeds the LLM context window, prioritizing headers and summaries.
-- **NEVER**: Send raw binary data to a text-only LLM; use OCR or Vision models for images.
+- **ALWAYS**: Use `pdfplumber` for PDF, `openpyxl` for XLSX, and `TxtParser` for plain text.
+- **ALWAYS**: Include context hints from Layer 1 & 2 in the LLM prompt to reduce hallucinations.
+- **NEVER**: Call the LLM (Layer 4) if a match is found in Layer 0 or Layer 3.
 
-### Metadata Generation (The "JSON Schema")
+### Metadata & Models
 
-- **ALWAYS**: Force the LLM to return the exact JSON structure defined in the business logic.
-- **ALWAYS**: Include a `confidence` score based on the clarity of the source material.
-- **ALWAYS**: Detect `language` using ISO 639-1 codes.
-- **NEVER**: Allow the LLM to invent fields outside the specified schema.
-
-### Error Handling & Reliability
-
-- **ALWAYS**: Implement a fallback mechanism if a file is corrupted or unreadable.
-- **ALWAYS**: Validate the JSON output against the schema before returning it to the CLI.
-- **NEVER**: Return an empty metadata file; provide at least `doc_type` as "unknown" and an error context.
+- **ALWAYS**: Return a validated `FileMetadata` Pydantic object.
+- **ALWAYS**: Ensure Layer 1 & 2 data is populated in `local_context` and `cluster_hint` fields.
+- **NEVER**: Return raw strings for errors; use the `_get_error_metadata` helper.
 
 ---
 
-## Core Schema Reference
+## Core Schema Reference (v2)
 
 ```json
 {
+  "file_hash": "string",
   "doc_type": "string",
   "language": "string",
   "domain": "string",
   "category": "string",
   "context": "string",
-  "tags": ["array", "of", "strings"],
-  "content_date": "ISO-8601",
-  "confidence": 0.0
+  "tags": ["array"],
+  "confidence": 0.0,
+  "local_context": { "filename": "str", "parent_folder": "string" },
+  "cluster_hint": { "cluster_id": "str", "is_anomaly": "bool" }
 }
 ```
 
 ---
 
-## QA Checklist (SDK)
-- [ ] PDF parser handles multi-column layouts correctly.
-- [ ] XLSX extraction captures sheet names as part of the context.
-- [ ] Image processing uses a Vision-capable model for tag generation.
-- [ ] Token usage is optimized to avoid unnecessary costs.
-- [ ] content_date is extracted from the document content when available.
+## QA Checklist (SDK v2)
+- [ ] Layer 0 SHA-256 calculation uses block streaming for large files.
+- [ ] Layer 1 extraction captures the correct file owner and parent folder.
+- [ ] Layer 2 grouping logic identifies similar files correctly within folders.
+- [ ] LLM prompt explicitly includes injected context facts.
+- [ ] Resource management (Context Managers) is enforced for all I/O.
 
 ---
 
 ## Related Skills
-- **[sidecar-tagger](../sidecar-tagger/SKILL.md)**: Global project orchestrator and roadmap.
-- **[sidecar-tagger-cli](../sidecar-tagger-cli/SKILL.md)**: CLI interface that consumes this SDK.
-- **[sidecar-tagger-test](../sidecar-tagger-test/SKILL.md)**: Testing suite for parser validation and LLM output quality.
+- **[sidecar-engine-standards](../sidecar-engine-standards/SKILL.md)**: Mandatory engineering mandates.
+- **[sidecar-tagger-cli](../sidecar-tagger-cli/SKILL.md)**: CLI interface.
+- **[sidecar-tagger-test](../sidecar-tagger-test/SKILL.md)**: Testing suite.

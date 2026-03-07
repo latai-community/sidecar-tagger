@@ -1,70 +1,61 @@
 ---
 name: sidecar-tagger-cli
 description: >
-  Specifies the CLI behavior and architecture for the Sidecar-tagger tool. 
-  Covers argument parsing logic, flag standards, and execution flow.
+  Specifies the CLI behavior and architecture for the Sidecar-tagger v2 tool. 
+  Covers argument parsing, Findings generation, and error handling standards.
   Trigger: When working on sidecar-tagger/cli/ or defining new CLI commands/flags.
 metadata:
-  version: "1.0"
+  version: "2.0"
   author: latai-community
   scope: [sidecar-tagger/cli]
 ---
 
 ## Overview
 
-The Sidecar-tagger CLI is the primary entry point for automated metadata extraction. It must handle file inputs and configuration flags with zero ambiguity.
+The Sidecar-tagger CLI v2 is the user interface for the **5-Layer Engine**. It manages recursive file scanning, standard flag enforcement, and generates value-added reports.
+
+### Primary Responsibilities
 
 | Component | Responsibility | Implementation |
 |-----------|----------------|----------------|
-| Parser    | Argument/Flag Parsing | Python `argparse` (StdLib) |
-| Validator | Path/File verification | `os.path` or `pathlib` |
-| Runner    | Orchestration | Main execution loop |
+| Scanner   | Recursive Path Discovery | `os.walk` with extension filtering. |
+| Reporter  | Value-added Analysis | `FindingsReporter` (`findings.md`). |
+| Runner    | Orchestration | Exception-aware execution loop. |
 
 ---
 
 ## Critical Rules
 
-### Argument Handling
+### Argument & Flag Standards
 
-- **ALWAYS**: Accept 1 to N files as positional arguments (`nargs='+'`).
-- **ALWAYS**: Use `argparse.FileType` or manual `pathlib.Path` validation.
-- **NEVER**: Hardcode file paths or input names.
+- **ALWAYS**: Accept multiple positional inputs (files or directories).
+- **ALWAYS**: Implement `--output-dir`, `--min-confidence`, `--verbose`, and `--overwrite`.
+- **ALWAYS**: Use `logging` levels mapped to the `--verbose` flag.
 
-### Flag Standards (The "Big Four")
+### Exception-Aware Flow
 
-- **ALWAYS**: Implement `--output-dir` (`-o`) for custom JSON destination.
-- **ALWAYS**: Implement `--min-confidence` (`-m`) as a `float` (default: 0.0).
-- **ALWAYS**: Implement `--verbose` (`-v`) for process logging.
-- **ALWAYS**: Implement `--overwrite` as a boolean flag to replace existing `.json` files.
+- **ALWAYS**: Catch `SidecarException` and return Exit Code `2` for system failures.
+- **ALWAYS**: Return Exit Code `0` only if the manifest and findings report are generated.
+- **NEVER**: Allow data loss; check for `sidecar.json` existence before processing unless `--overwrite` is set.
 
-### Execution Flow
+### Value-Added Output
 
-- **ALWAYS**: Return Exit Code `0` on success and `1` on any runtime error.
-- **ALWAYS**: Print a summary of "Files Processed" vs "Files Skipped" at the end.
-- **NEVER**: Silently fail if an input file is missing.
+- **ALWAYS**: Call the `FindingsReporter` after processing to generate `findings.md`.
+- **ALWAYS**: Print the final location of both the `sidecar.json` and the `findings.md` report.
 
 ---
 
-## Quick Reference: CLI Template
+## QA Checklist (CLI v2)
 
-1. Initialize `ArgumentParser(description="Sidecar Tagger CLI")`.
-2. Define positional `files` argument.
-3. Define optional flags with short and long versions.
-4. Parse and pass `Namespace` object to the core logic.
-
----
-
-## QA Checklist
-
-- [ ] Every flag has a clear, English help description.
-- [ ] Positional arguments support multiple files (batch processing).
-- [ ] `--verbose` mode actually outputs internal logic steps.
-- [ ] Metadata is consolidated into a single `sidecar.json`.
-- [ ] The `--help` command displays all options correctly.
+- [ ] CLI correctly identifies all supported extensions (`.pdf`, `.xlsx`, `.txt`, `.md`, etc.).
+- [ ] Recursive scanning ignores hidden folders and follows links safely.
+- [ ] `--verbose` mode shows details of Layer 0 (Hash) and Layer 3 (Embedding) hits.
+- [ ] Findings report accurately summarizes duplicate savings.
+- [ ] CLI returns Exit Code `3` for unexpected fatal errors.
 
 ---
 
 ## Related Skills
-- **[sidecar-tagger](../sidecar-tagger/SKILL.md)**: Global project orchestrator and roadmap.
-- **[sidecar-tagger-sdk](../sidecar-tagger-sdk/SKILL.md)**: Core engine for metadata extraction.
-- **[sidecar-tagger-test](../sidecar-tagger-test/SKILL.md)**: Validation of CLI flags and execution flow.
+- **[sidecar-engine-standards](../sidecar-engine-standards/SKILL.md)**: Global quality mandates.
+- **[sidecar-tagger-sdk](../sidecar-tagger-sdk/SKILL.md)**: Core engine logic.
+- **[sidecar-tagger-test](../sidecar-tagger-test/SKILL.md)**: Verification of CLI behavior.
