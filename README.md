@@ -11,7 +11,7 @@ Unlike traditional taggers, Sidecar-tagger v2 doesn't just read content; it unde
 
 ## The 5-Layer Engine Architecture
 
-The system processes each file through five sequential filters to maximize efficiency:
+The system processes each file through five sequential filters to maximize efficiency and reduce costs (it focuses on LOCAL processing before Cloud or Ai consumption):
 
 1.  **LAYER 0: Binary Identity (Hash Gate)**: Uses SHA-256 to detect exact duplicates. If a file has been processed before, metadata is cloned instantly ($0 cost).
 2.  **LAYER 1: Context Enrichment**: Algorithmic extraction of OS facts (parent folders, file owner, timestamps) and internal properties (Office/PDF headers).
