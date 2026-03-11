@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from sdk.parsers.pdf_parser import extract_pdf_content
-from sdk.parsers.xlsx_parser import extract_xlsx_content
-from sdk.parsers.image_parser import extract_image_metadata
+from sdk.parsers.pdf_parser import PdfParser
+from sdk.parsers.xlsx_parser import XlsxParser
+from sdk.parsers.image_parser import ImageParser
 import os
 
 # --- PDF Parser Tests ---
@@ -12,13 +12,21 @@ def test_extract_pdf_content(mock_open):
     mock_pdf = MagicMock()
     mock_page = MagicMock()
     mock_page.extract_text.return_value = "Sample PDF Text"
+    
+    # Mocking thumbnail generation calls
+    mock_img = MagicMock()
+    mock_page.to_image.return_value.original = mock_img
+    mock_img.convert.return_value.getextrema.return_value = (0, 255) # Not white
+    
     mock_pdf.pages = [mock_page]
     mock_pdf.metadata = {"Author": "Test"}
     mock_open.return_value.__enter__.return_value = mock_pdf
     
     # We need a file that "exists" for the os.path.exists check
     with patch("os.path.exists", return_value=True):
-        content = extract_pdf_content("dummy.pdf")
+        parser = PdfParser()
+        result = parser.extract("dummy.pdf")
+        content = result["text"]
         assert "Sample PDF Text" in content
         mock_open.assert_called_once_with("dummy.pdf")
 
@@ -37,7 +45,9 @@ def test_extract_xlsx_content(mock_load):
     mock_load.return_value = mock_wb
     
     with patch("os.path.exists", return_value=True):
-        content = extract_xlsx_content("dummy.xlsx")
+        parser = XlsxParser()
+        result = parser.extract("dummy.xlsx")
+        content = result["text"]
         assert "Sheet1" in content
         assert "10 rows" in content
         assert "Cell1 | Cell2" in content
@@ -55,6 +65,8 @@ def test_extract_image_metadata(mock_img_open):
     mock_img_open.return_value.__enter__.return_value = mock_img
     
     with patch("os.path.exists", return_value=True):
-        content = extract_image_metadata("dummy.png")
+        parser = ImageParser()
+        result = parser.extract("dummy.png")
+        content = result["text"]
         assert "PNG" in content
         assert "100x200" in content

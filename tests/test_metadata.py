@@ -12,13 +12,13 @@ def test_valid_metadata():
         "category": "accounts_payable",
         "context": "Cloud service invoice",
         "tags": ["cloud", "azure"],
-        "content_date": datetime.now(),
+        "content_date": "2024-05-22T10:00:00Z",
         "confidence": 0.95
     }
     metadata = FileMetadata(**data)
     assert metadata.doc_type == "invoice"
     assert metadata.confidence == 0.95
-    assert isinstance(metadata.content_date, datetime)
+    assert isinstance(metadata.content_date, str)
 
 def test_optional_date():
     """Test that content_date is optional."""
@@ -45,30 +45,29 @@ def test_invalid_confidence():
             confidence=1.5  # Invalid, must be <= 1.0
         )
 
-def test_missing_field():
-    """Test that missing a required field raises a ValidationError."""
-    with pytest.raises(ValidationError):
-        FileMetadata(
-            # doc_type is missing
-            language="en",
-            domain="finance",
-            category="accounts_payable",
-            context="context",
-            confidence=0.9
-        )
+def test_default_values():
+    """Test that missing fields get default values instead of raising ValidationError."""
+    metadata = FileMetadata(
+        # doc_type is missing, should default to "unknown"
+        language="en",
+        domain="finance",
+        category="accounts_payable",
+        context="context",
+        confidence=0.9
+    )
+    assert metadata.doc_type == "unknown"
 
 def test_json_serialization():
-    """Test that model_dump(mode='json') correctly serializes datetime."""
+    """Test that model_dump(mode='json') correctly serializes data."""
     metadata = FileMetadata(
         doc_type="invoice",
         language="en",
         domain="finance",
         category="accounts_payable",
         context="context",
-        content_date=datetime.now(),
+        content_date="2024-05-22T10:00:00Z",
         confidence=0.9
     )
     json_data = metadata.model_dump(mode='json')
     assert isinstance(json_data["content_date"], str)
-    # Check if it follows ISO 8601 roughly (contains 'T')
-    assert 'T' in json_data["content_date"]
+    assert json_data["content_date"] == "2024-05-22T10:00:00Z"

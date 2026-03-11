@@ -1,0 +1,51 @@
+# Gemini CLI: Setup & Troubleshooting Log (sidecar-tagger)
+Date: 2026-03-11
+OS: Windows 11 (PowerShell)
+
+## Phase 1: Environment Discovery
+1. `python --version; if (Test-Path .venv) { .venv\Scripts\python --version }`
+   - Status: SUCCESS
+   - Reason: Identified that Python 3.11.9 (System) and 3.13.2 (.venv) were already present.
+
+2. `read_file requirements.txt`
+   - Status: SUCCESS
+   - Reason: Scanned the project dependencies to prepare for installation.
+
+3. `.venv\Scripts\pip list`
+   - Status: SUCCESS
+   - Reason: Confirmed the existing virtual environment was empty and needed a full install.
+
+4. `.venv\Scripts\python -c "print(...)"` & `python -c "print(...)"`
+   - Status: SUCCESS
+   - Reason: Smoke tests to ensure both interpreters were responsive.
+
+## Phase 2: Installation
+5. `python3 --version`
+   - Status: SUCCESS
+   - Reason: Verified the user's requested 'python3' command alias works on this Windows machine.
+
+6. `.\.venv\Scripts\pip install -r requirements.txt`
+   - Status: SUCCESS
+   - Reason: Installed 58 packages (Pillow, FastEmbed, Google Generative AI, etc.) into the local environment.
+
+## Phase 3: Validation & Debugging
+7. `.\.venv\Scripts\pytest` (Attempt 1)
+   - Status: FAILED
+   - Reason: 2 collection errors. The tests were outdated; they tried to import standalone functions (e.g., `extract_pdf_content`) that had been refactored into a class-based interface (e.g., `PdfParser().extract()`).
+
+8. `grep -E "class .*Parser" sdk/parsers/*.py` (via shell command)
+   - Status: FAILED
+   - Reason: 'grep' is not a native PowerShell command.
+
+9. `grep_search` (Internal Tool)
+   - Status: SUCCESS
+   - Reason: Reliably found the new class names (`PdfParser`, `TxtParser`, `XlsxParser`, `ImageParser`) to guide the test refactoring.
+
+10. Batch Refactoring (via Generalist Sub-agent)
+    - Status: SUCCESS
+    - Reason: Updated `tests/test_parsers.py`, `tests/test_txt_parser.py`, and `tests/test_metadata.py` to use the new SDK architecture and handle Pydantic v2 validation updates.
+
+## Phase 4: Final Success
+11. `.\.venv\Scripts\pytest` (Attempt 2)
+    - Status: SUCCESS
+    - Reason: 21 tests passed. Confirmed that the environment, SDK, and tests are now in sync.

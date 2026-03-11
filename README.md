@@ -6,33 +6,39 @@ Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the h
   <img src=".gemini/skills/sidecar-tagger/assets/sidecar-tagger-logo.png" alt="Sidecar-tagger Logo" width="150">
 </p>
 
+## Table of Contents
+- [Core Philosophy](#core-philosophy-the-contextual-motor)
+- [The 5-Layer Engine Architecture](#the-5-layer-engine-architecture)
+- [Tech Stack](#tech-stack)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+  - [1. Clone and Navigate](#1-clone-and-navigate)
+  - [2. Environment Setup (Python)](#2-environment-setup-python)
+  - [3. Configure API Keys](#3-configure-api-keys)
+  - [4. Install Dependencies](#4-install-dependencies)
+- [Running the Engine](#running-the-engine)
+- [Development & Testing](#development--testing)
+- [Troubleshooting](#troubleshooting)
+- [Project Structure](#project-structure)
+- [License](#license)
+
+---
+
 ## Core Philosophy: The Contextual Motor
 Unlike traditional taggers, Sidecar-tagger v2 doesn't just read content; it understands **environment**. By combining OS-level facts, neighborhood patterns, and multimodal AI, it generates high-precision metadata while minimizing API costs.
 
 ## The 5-Layer Engine Architecture
+The system processes each file through five sequential filters to maximize efficiency and reduce costs (it focuses on **LOCAL processing** before Cloud or AI consumption):
 
-The system processes each file through five sequential filters to maximize efficiency and reduce costs (it focuses on LOCAL processing before Cloud or Ai consumption):
-
-1.  **LAYER 0: Binary Identity (Hash Gate)**: Uses SHA-256 to detect exact duplicates. If a file has been processed before, metadata is cloned instantly ($0 cost).
-2.  **LAYER 1: Context Enrichment**: Algorithmic extraction of OS facts (parent folders, file owner, timestamps) and internal properties (Office/PDF headers).
-3.  **LAYER 2: Collective Intelligence (Clustering)**: Analyzes "Neighborhood Wisdom" using fuzzy string matching to group similar files and inherit tags from cluster leaders.
-4.  **LAYER 3: Semantic Identity (Embeddings)**: Uses local **ONNX vectors** (FastEmbed) to detect content reuse and semantic near-matches.
-5.  **LAYER 4: Cognitive Analysis (Gemini 3)**: High-precision LLM analysis injected with all previous context facts to eliminate hallucinations and reduce token usage.
-
----
-
-## Key Features
-
-- **Semantic Cache (Embedding First)**: Identifies similar documents to reuse metadata, drastically reducing latency.
-- **Multimodal Vision**: Automatically uploads PDFs or Images to Gemini for visual analysis when text is insufficient.
-- **Findings Reporter**: Generates a `findings.md` report highlighting duplicate savings, semantic anomalies, and top themes.
-- **Strict Engineering Standards**: Built with Java-grade rigor (Strict typing, Interface-driven parsers, Semantic exceptions).
-- **Extensive Format Support**: Robust handling for PDF, XLSX, Image, and TXT/MD/LOG files.
+1. **LAYER 0: Binary Identity (Hash Gate)**: SHA-256 deduplication. metadata is cloned instantly if the file is known ($0 cost).
+2. **LAYER 1: Context Enrichment**: Extraction of OS facts (parent folders, owner, timestamps) and internal headers.
+3. **LAYER 2: Collective Intelligence (Clustering)**: Analyzes "Neighborhood Wisdom" to group similar files.
+4. **LAYER 3: Semantic Identity (Embeddings)**: Local **ONNX vectors** (FastEmbed) detect content reuse.
+5. **LAYER 4: Cognitive Analysis (Gemini 1.5)**: High-precision LLM analysis injected with previous context to eliminate hallucinations.
 
 ---
 
 ## Tech Stack
-
 - **Language**: Python 3.11+ (Strictly Typed)
 - **AI Models**: Google Gemini 1.5 Flash / Pro
 - **Local Embeddings**: FastEmbed (ONNX)
@@ -41,53 +47,119 @@ The system processes each file through five sequential filters to maximize effic
 
 ---
 
+## Prerequisites
+Before you begin, ensure you have the following installed:
+- **Python 3.11 or higher**
+- **Git**
+- **A Google Gemini API Key** (See [Configure API Keys](#3-configure-api-keys))
+
+---
+
 ## Getting Started
 
-### 1. Linux) Setup Environment
+### 1. Clone and Navigate
 ```bash
+git clone https://github.com/latai-community/sidecar-tagger.git
+cd sidecar-tagger
+```
+
+### 2. Environment Setup (Python)
+It is highly recommended to use a virtual environment to avoid conflicts with other Python projects.
+
+#### **Windows 11 (PowerShell)**
+```powershell
+# Create the virtual environment
+python -m venv .venv
+
+# Activate the virtual environment
+.\.venv\Scripts\Activate.ps1
+```
+
+#### **Linux / macOS**
+```bash
+# Create the virtual environment
 python3 -m venv .venv
+
+# Activate the virtual environment
 source .venv/bin/activate
+```
+
+### 3. Configure API Keys
+The engine requires a **Google Gemini API Key** for Layer 4 analysis.
+
+1. **Get your key:** Visit the [Google AI Studio](https://aistudio.google.com/app/apikey) to generate a free or pay-as-you-go API key.
+2. **Setup your environment file:**
+   - Copy the example file: `cp .env.example .env`
+   - Open `.env` and replace `your_api_key_here` with your actual key.
+
+**Example `.env` file:**
+```env
+# Your actual key looks like this: AIzaSy...
+GEMINI_API_KEY=AIzaSyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6
+GEMINI_MODEL=gemini-1.5-flash
+LLM_PROVIDER=gemini
+```
+
+### 4. Install Dependencies
+Ensure your virtual environment is activated, then run:
+```bash
 pip install -r requirements.txt
 ```
 
-### 1) Windows) Setup Environment (PowerShell)
-'''cmd
-   1. Create venv: python -m venv .venv (Note: python3 is usually just python on Windows)
-   2. Activate: .venv\Scripts\Activate.ps1
-   3. Install: pip install -r requirements.txt
-'''
+---
 
+## Running the Engine
+You can run the engine against a single file or a directory.
 
-### 2. Configure API Key
-Create a `.env` file from `.env.example`:
-```env
-GEMINI_API_KEY=your_key_here
-GEMINI_MODEL=gemini-1.5-flash
-```
-
-### 3. Run the Engine
 ```bash
+# Basic run on a directory
+python cli/main.py path/to/your/files
+
+# Verbose mode with overwrite enabled
 python cli/main.py path/to/data --verbose --overwrite
 ```
 
 ---
 
-## Project Structure
+## Development & Testing
+This project follows strict engineering standards. All PRs must pass the test suite.
 
+### Running Tests
+```bash
+# Run all tests using pytest
+pytest
+```
+
+---
+
+## Troubleshooting
+
+### Windows "Execution Policy" Error
+If you cannot activate the virtual environment on Windows, run this command in an Administrator PowerShell:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### "ImportError: cannot import name..."
+If tests fail with an `ImportError`, ensure you have installed the requirements (`pip install -r requirements.txt`) and that you are running `pytest` from the project root with the virtual environment activated.
+
+### "GEMINI_API_KEY not found"
+Ensure your `.env` file is in the root directory and contains the correct variable name: `GEMINI_API_KEY`.
+
+---
+
+## Project Structure
 ```text
 sidecar-tagger/
-├── cli/                # Context-aware entry point
-├── sdk/                # Core 5-Layer Engine
+├── cli/                # CLI entry point (main.py)
+├── sdk/                # Core 5-Layer Engine logic
 │   ├── context/        # Layer 1 & 2 (OS Facts & Clustering)
 │   ├── parsers/        # Layer-agnostic extractors (PDF, XLSX, etc.)
 │   ├── models/         # Pydantic schema definitions
 │   └── utils/          # Layer 0 (Hashing) & Helpers
-├── tests/              # Robust validation suite
+├── tests/              # Comprehensive test suite
 └── .gemini/            # AI Agent skills and standards
 ```
-
-## Maintenance & Standards
-This project follows the **`sidecar-engine-standards`**. All contributions must include type hints, custom exceptions, and comprehensive tests. Refer to `planning.md` for the technical roadmap.
 
 ---
 
