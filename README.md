@@ -43,12 +43,20 @@ The system processes each file through five sequential filters to maximize effic
 
 ## Getting Started
 
-### 1. Setup Environment
+### 1. Linux) Setup Environment
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+### 1) Windows) Setup Environment (PowerShell)
+'''cmd
+   1. Create venv: python -m venv .venv (Note: python3 is usually just python on Windows)
+   2. Activate: .venv\Scripts\Activate.ps1
+   3. Install: pip install -r requirements.txt
+'''
+
 
 ### 2. Configure API Key
 Create a `.env` file from `.env.example`:
