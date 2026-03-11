@@ -1,6 +1,7 @@
 # Sidecar-tagger - Generated metadata
 sidecar.json
 *.json
+findings.md
 
 # Python
 __pycache__/

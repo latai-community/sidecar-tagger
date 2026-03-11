@@ -15,7 +15,8 @@ Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the h
   - [1. Clone and Navigate](#1-clone-and-navigate)
   - [2. Environment Setup (Python)](#2-environment-setup-python)
   - [3. Configure API Keys](#3-configure-api-keys)
-  - [4. Install Dependencies](#4-install-dependencies)
+  - [4. Available Model Discovery](#4-available-model-discovery)
+  - [5. Install Dependencies](#5-install-dependencies)
 - [Running the Engine](#running-the-engine)
 - [Development & Testing](#development--testing)
 - [Troubleshooting](#troubleshooting)
@@ -40,7 +41,7 @@ The system processes each file through five sequential filters to maximize effic
 
 ## Tech Stack
 - **Language**: Python 3.11+ (Strictly Typed)
-- **AI Models**: Google Gemini 1.5 Flash / Pro
+- **AI Models**: Google Gemini 1.5 Flash / Pro / 2.0
 - **Local Embeddings**: FastEmbed (ONNX)
 - **Metadata Format**: Pydantic-validated JSON
 - **Execution**: Recursive, Context-Aware Pipeline
@@ -96,11 +97,29 @@ The engine requires a **Google Gemini API Key** for Layer 4 analysis.
 ```env
 # Your actual key looks like this: AIzaSy...
 GEMINI_API_KEY=AIzaSyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-2.0-flash
 LLM_PROVIDER=gemini
 ```
 
-### 4. Install Dependencies
+### 4. Available Model Discovery
+If you receive a `404: model not found` error, your API key might not have access to the default model in your region. You can use the included discovery script to find models you **can** use.
+
+**Run the discovery script:**
+```powershell
+# Windows
+.\.venv\Scripts\python.exe list_models.py
+
+# Linux / macOS
+python3 list_models.py
+```
+
+**Update your .env:**
+Find a model name in the output (e.g., `models/gemini-1.5-flash-8b`) and update your `.env` file:
+```env
+GEMINI_MODEL=gemini-1.5-flash-8b
+```
+
+### 5. Install Dependencies
 Ensure your virtual environment is activated, then run:
 ```bash
 pip install -r requirements.txt
@@ -158,7 +177,8 @@ sidecar-tagger/
 │   ├── models/         # Pydantic schema definitions
 │   └── utils/          # Layer 0 (Hashing) & Helpers
 ├── tests/              # Comprehensive test suite
-└── .gemini/            # AI Agent skills and standards
+├── .gemini/            # AI Agent skills and standards
+└── list_models.py      # Model discovery utility
 ```
 
 ---
