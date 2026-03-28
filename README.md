@@ -3,7 +3,7 @@
 Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the high-performance core for semantic search UIs and OS-level file management systems. It leverages a proprietary 5-Layer pipeline to transform raw files into semantically-enriched, structured manifests with zero redundant processing.
 
 <p align="center">
-  <img src=".gemini/skills/sidecar-tagger/assets/sidecar-tagger-logo.png" alt="Sidecar-tagger Logo" width="150">
+  <img src="assets/sidecar-tagger-logo.png" alt="Sidecar-tagger Logo" width="150">
 </p>
 
 ## Table of Contents
@@ -15,8 +15,8 @@ Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the h
   - [1. Clone and Navigate](#1-clone-and-navigate)
   - [2. Environment Setup (Python)](#2-environment-setup-python)
   - [3. Configure API Keys](#3-configure-api-keys)
-  - [4. Available Model Discovery](#4-available-model-discovery)
-  - [5. Install Dependencies](#5-install-dependencies)
+  - [4. Install Dependencies](#4-install-dependencies)
+  - [5. Available Model Discovery](#5-available-model-discovery)
 - [Running the Engine](#running-the-engine)
 - [Development & Testing](#development--testing)
 - [Troubleshooting](#troubleshooting)
@@ -101,10 +101,16 @@ GEMINI_MODEL=gemini-2.0-flash
 LLM_PROVIDER=gemini
 ```
 
-### 4. Available Model Discovery
+### 4. Install Dependencies
+Ensure your virtual environment is activated, then run:
+```bash
+pip install -r requirements.txt
+```
+
+### 5. Available Model Discovery
 If you receive a `404: model not found` error, your API key might not have access to the default model in your region. You can use the included discovery script to find models you **can** use.
 
-**Run the discovery script:**
+**Quick test (recommended - no quota used):**
 ```powershell
 # Windows
 .\.venv\Scripts\python.exe list_models.py
@@ -113,16 +119,23 @@ If you receive a `404: model not found` error, your API key might not have acces
 python3 list_models.py
 ```
 
-**Update your .env:**
-Find a model name in the output (e.g., `models/gemini-1.5-flash-8b`) and update your `.env` file:
-```env
-GEMINI_MODEL=gemini-1.5-flash-8b
+This uses `count_tokens` to verify model availability without spending your quota.
+
+**Full test (uses quota):**
+```powershell
+# Windows
+.\.venv\Scripts\python.exe list_models.py --mode full
+
+# Linux / macOS
+python3 list_models.py --mode full
 ```
 
-### 5. Install Dependencies
-Ensure your virtual environment is activated, then run:
-```bash
-pip install -r requirements.txt
+This uses actual `generate_content` requests to confirm models respond correctly. Useful to check if your quota is exhausted.
+
+**Update your .env:**
+After running the script, copy the recommended model name from the output and update your `.env` file:
+```env
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ---
