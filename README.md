@@ -1,6 +1,6 @@
 # Sidecar-tagger (v2)
 
-Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the high-performance core for semantic search UIs and OS-level file management systems. It leverages a proprietary 5-Layer pipeline to transform raw files into semantically-enriched, structured manifests with zero redundant processing.
+Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the high-performance core for semantic search UIs and OS-level file management systems. It leverages a proprietary **4-Layer Pipeline (MVP)** to transform raw files into semantically-enriched, structured manifests with zero redundant processing.
 
 <p align="center">
   <img src="assets/sidecar-tagger-logo.png" alt="Sidecar-tagger Logo" width="150">
@@ -28,23 +28,35 @@ Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the h
 ## Core Philosophy: The Contextual Motor
 Unlike traditional taggers, Sidecar-tagger v2 doesn't just read content; it understands **environment**. By combining OS-level facts, neighborhood patterns, and multimodal AI, it generates high-precision metadata while minimizing API costs.
 
-## The 5-Layer Engine Architecture
-The system processes each file through five sequential filters to maximize efficiency and reduce costs (it focuses on **LOCAL processing** before Cloud or AI consumption):
+## The 4-Layer Pipeline Architecture
+The system processes each file through four sequential filters to maximize efficiency and reduce costs (it focuses on **LOCAL processing** before Cloud or AI consumption):
 
-1. **LAYER 0: Binary Identity (Hash Gate)**: SHA-256 deduplication. metadata is cloned instantly if the file is known ($0 cost).
-2. **LAYER 1: Context Enrichment**: Extraction of OS facts (parent folders, owner, timestamps) and internal headers.
-3. **LAYER 2: Collective Intelligence (Clustering)**: Analyzes "Neighborhood Wisdom" to group similar files.
-4. **LAYER 3: Semantic Identity (Embeddings)**: Local **ONNX vectors** (FastEmbed) detect content reuse.
-5. **LAYER 4: Cognitive Analysis (Gemini 1.5)**: High-precision LLM analysis injected with previous context to eliminate hallucinations.
+1. **LAYER 0: Hash Gate**: SHA-256 deduplication. Metadata is cloned instantly if the file is known ($0 cost).
+2. **LAYER 1: Native + OS Metadata**: Extracts EXIFTOOL metadata (author, title, keywords) and OS facts (filename, path, size, timestamps). If confidence ≥ 0.8 → shortcut (no AI needed).
+3. **LAYER 2: Embeddings (Semantic Cache)**: Local **ONNX vectors** (FastEmbed) detect content reuse. If similarity ≥ 0.9 → return cached metadata.
+4. **LAYER 3: LLM + Clustering Hint**: High-precision LLM analysis (Gemini) injected with clustering context to eliminate hallucinations.
+
+---
+
+## Analysis Levels (Configurable)
+
+You can choose how deep the analysis goes based on your cost/precision needs:
+
+| Level | Layers | Cost | Precision | Use Case |
+|-------|--------|------|-----------|----------|
+| **minimal** | L0 | $0 | Low | Fast dedup only |
+| **fast** | L0 + L1 | $0 | Medium | Quick scan with OS metadata |
+| **standard** | L0 + L1 + L2 | $0 | High | Default - uses semantic cache |
+| **deep** | L0 + L1 + L2 + L3 | $ | Very High | Maximum precision with AI |
 
 ---
 
 ## Tech Stack
 - **Language**: Python 3.11+ (Strictly Typed)
-- **AI Models**: Google Gemini 1.5 Flash / Pro / 2.0
+- **AI Models**: Google Gemini 2.0 Flash
 - **Local Embeddings**: FastEmbed (ONNX)
 - **Metadata Format**: Pydantic-validated JSON
-- **Execution**: Recursive, Context-Aware Pipeline
+- **Execution**: 4-Layer Pipeline (configurable Analysis Levels)
 
 ---
 
@@ -184,13 +196,13 @@ Ensure your `.env` file is in the root directory and contains the correct variab
 ```text
 sidecar-tagger/
 ├── cli/                # CLI entry point (main.py)
-├── sdk/                # Core 5-Layer Engine logic
-│   ├── context/        # Layer 1 & 2 (OS Facts & Clustering)
-│   ├── parsers/        # Layer-agnostic extractors (PDF, XLSX, etc.)
+├── sdk/                # Core 4-Layer Pipeline logic
+│   ├── context/        # Layer 1 (OS Facts) & Clustering Hint
+│   ├── parsers/        # Layer-agnostic extractors (PDF, XLSX, Images, TXT)
 │   ├── models/         # Pydantic schema definitions
 │   └── utils/          # Layer 0 (Hashing) & Helpers
+├── docs/               # Architecture decisions & issues
 ├── tests/              # Comprehensive test suite
-├── .gemini/            # AI Agent skills and standards
 └── list_models.py      # Model discovery utility
 ```
 

@@ -9,8 +9,9 @@ from typing import List, Optional, Dict
 
 class LocalContext(BaseModel):
     """
-    Layer 1: Contextual facts extracted from the OS and file headers (Algorithmic).
+    Layer 1: Native + OS Metadata - Facts extracted from OS and file headers.
     Used to ground the AI and reduce hallucinations.
+    Includes: filename, path, size, timestamps, EXIFTOOL data (author, title, keywords).
     """
     filename: str = Field(..., description="Original filename")
     file_extension: str = Field(..., description="File extension (e.g., .pdf)")
@@ -24,8 +25,8 @@ class LocalContext(BaseModel):
 
 class ClusterHint(BaseModel):
     """
-    Layer 2: Suggestions derived from neighboring files (Collective Intelligence).
-    Used to guide the AI with high-confidence patterns found in the same folder.
+    Layer 1.5 (Transient): Suggestions derived from neighboring files.
+    Passed as context to Layer 3 (LLM) to guide classification.
     """
     cluster_id: Optional[str] = Field(None, description="Unique ID for the file cluster")
     similarity_score: float = Field(0.0, description="Similarity to cluster leader (0.0 - 1.0)")
@@ -57,15 +58,17 @@ class FileMetadata(BaseModel):
         }
     )
 
-    # Layer 0: Binary Identity
+    # Layer 0: Binary Identity (Hash Dedup)
     file_hash: Optional[str] = Field(None, description="SHA-256 hash for exact deduplication")
     duplicate_of: Optional[str] = Field(None, description="Path to the original file if this is a duplicate")
 
-    # Layer 1 & 2: Contextual Inputs
+    # Layer 1: Native + OS Metadata
     local_context: Optional[LocalContext] = Field(None, description="OS and Header facts")
+
+    # Layer 1.5: Clustering Hint (transient, for LLM context)
     cluster_hint: Optional[ClusterHint] = Field(None, description="Neighborhood context suggestions")
 
-    # Layer 3 & 4: Semantic Analysis
+    # Layer 2 & 3: Semantic Analysis
     doc_type: Optional[str] = Field("unknown", description="Document classification (e.g., invoice, report, screenshot)")
     language: Optional[str] = Field("unknown", description="Primary language of the document")
     domain: Optional[str] = Field("unknown", description="Industry or functional domain (e.g., finance, legal, tech)")

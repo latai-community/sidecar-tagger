@@ -1,6 +1,6 @@
 """
 Title: Metadata Processor Core (v2)
-Abstract: Orchestrates the 5-Layer Contextual Engine (Hash -> Context -> Cluster -> Embedding -> AI).
+Abstract: Orchestrates the 4-Layer Pipeline (Hash -> Native+OS -> Embeddings -> LLM).
 Dependencies: os, json, logging, sdk.parsers, sdk.llm_client, sdk.embeddings_client, sdk.exceptions, sdk.utils.hashing, sdk.context
 LLM-Hints: This is the brain of the system.
 """
@@ -28,7 +28,11 @@ logger = logging.getLogger("SidecarProcessor")
 
 class MetadataProcessor:
     """
-    Orchestrates the 5-Layer Contextual Engine.
+    Orchestrates the 4-Layer Pipeline:
+    - Layer 0: Hash Dedup
+    - Layer 1: Native + OS Metadata
+    - Layer 2: Embeddings (Semantic Cache)
+    - Layer 3: LLM + Clustering Hint
     """
 
     def __init__(self, output_path: str = "sidecar.json", similarity_threshold: float = 0.9) -> None:
@@ -79,7 +83,7 @@ class MetadataProcessor:
         return index
 
     def _find_similar_vector(self, current_vector: List[float]) -> Optional[Dict[str, Any]]:
-        """Layer 3: Semantic Cache Check."""
+        """Layer 2: Semantic Cache Check."""
         for path, metadata in self.metadata_store.items():
             stored_vector = metadata.get("embedding_vector")
             if stored_vector:
@@ -98,8 +102,8 @@ class MetadataProcessor:
     def process_files(self, file_paths: List[str]) -> None:
         """Main batch processing loop."""
         
-        # Layer 2 Pre-calculation: Analyze neighborhood
-        logger.info(" -> Layer 2: Analyzing file clusters...")
+        # Layer 1.5: Pre-calculate clustering hints
+        logger.info(" -> Layer 1.5: Analyzing file clusters...")
         self.cluster_manager.analyze_neighborhood(file_paths)
         
         for path in file_paths:
@@ -142,13 +146,13 @@ class MetadataProcessor:
                 
                 return original_meta
 
-            # --- LAYER 1: Context Enrichment ---
+            # --- LAYER 1: Native + OS Metadata ---
             local_context = self.os_extractor.extract(file_path)
             
-            # --- LAYER 2: Cluster Hint ---
+            # --- Layer 1.5: Cluster Hint ---
             cluster_hint = self.cluster_manager.get_hint(file_path)
             if cluster_hint.cluster_id:
-                 logger.info(f" -> Layer 2 Hint: Member of {cluster_hint.cluster_id} (Sim: {cluster_hint.similarity_score:.2f})")
+                 logger.info(f" -> Layer 1.5 Hint: Member of {cluster_hint.cluster_id} (Sim: {cluster_hint.similarity_score:.2f})")
 
             # Extract Content (Parsing)
             ext = local_context.file_extension
@@ -163,7 +167,7 @@ class MetadataProcessor:
             else:
                 content = f"Generic content for {filename}"
 
-            # --- LAYER 3: Semantic Identity ---
+            # --- LAYER 2: Embeddings (Semantic Cache) ---
             # Generate vector using content + context hints
             # (For now we just embed content, v2.1 could embed context too)
             vector_content = content if content.strip() else f"{filename} {local_context.parent_folder}"
@@ -178,8 +182,8 @@ class MetadataProcessor:
                 cached_meta["embedding_vector"] = vector # Update vector just in case
                 return cached_meta
 
-            # --- LAYER 4: Cognitive Analysis (AI) ---
-            logger.info(f" -> Layer 4: Deep Analysis with Gemini...")
+            # --- LAYER 3: LLM + Clustering Hint ---
+            logger.info(f" -> Layer 3: Deep Analysis with Gemini...")
             
             # Inject Context into LLM Client
             pdf_path = file_path if ext == ".pdf" else None
