@@ -15,6 +15,7 @@ from typing import List
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sdk.processor import MetadataProcessor
+from sdk.config import AnalysisLevel, ProcessorConfig
 from sdk.exceptions import SidecarException
 from sdk.reporter import FindingsReporter
 
@@ -61,6 +62,12 @@ def main() -> None:
     parser.add_argument('--min-confidence', '-m', type=float, default=0.0, help='Filter metadata by confidence score.')
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable detailed process logging.')
     parser.add_argument('--overwrite', action='store_true', help='Replace existing sidecar.json if present.')
+    parser.add_argument(
+        '--level', '-l',
+        choices=['minimal', 'fast', 'standard', 'deep'],
+        default='standard',
+        help='Analysis depth level: minimal (hash only), fast (OS metadata), standard (with cache), deep (full AI)'
+    )
 
     args = parser.parse_args()
 
@@ -83,7 +90,11 @@ def main() -> None:
 
         logger.info(f"Indexing {len(files_to_process)} files into {output_path}...")
         
-        processor = MetadataProcessor(output_path=output_path)
+        # Create processor with analysis level
+        config = ProcessorConfig.from_level(AnalysisLevel(args.level))
+        logger.info(f"Using analysis level: {args.level} (layers: {config.get_enabled_layers()})")
+        
+        processor = MetadataProcessor(config=config, output_path=output_path)
         processor.process_files(files_to_process)
 
         logger.info(f"Done. Manifest successfully generated at {output_path}")

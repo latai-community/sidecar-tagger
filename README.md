@@ -155,12 +155,45 @@ GEMINI_MODEL=gemini-2.5-flash
 ## Running the Engine
 You can run the engine against a single file or a directory.
 
+### Basic Commands
+
 ```bash
-# Basic run on a directory
+# Basic run on a directory (default: standard level)
 python cli/main.py path/to/your/files
 
 # Verbose mode with overwrite enabled
 python cli/main.py path/to/data --verbose --overwrite
+```
+
+### Analysis Levels
+
+Use the `--level` or `-l` flag to control analysis depth:
+
+```bash
+# minimal: Hash dedup only ($0 cost, fastest)
+python cli/main.py path/to/files --level minimal
+
+# fast: Hash + OS metadata ($0 cost, ~100ms/file)
+python cli/main.py path/to/files --level fast
+
+# standard: Hash + OS + Semantic Cache (default, $0 cost)
+python cli/main.py path/to/files --level standard
+
+# deep: Full pipeline with LLM (uses API, highest precision)
+python cli/main.py path/to/files --level deep
+```
+
+### Other Options
+
+```bash
+# Custom output directory
+python cli/main.py path/to/files --output-dir ./output
+
+# Overwrite existing sidecar.json
+python cli/main.py path/to/files --overwrite
+
+# Combine options
+python cli/main.py path/to/files --level deep --verbose --overwrite
 ```
 
 ---
