@@ -106,6 +106,38 @@ class TestAnalysisLevel:
         assert "standard" in config_str
         assert "layers=[0, 1, 2]" in config_str
 
+    def test_processor_config_from_layers_single(self):
+        """Test creating config from a single layer."""
+        config = ProcessorConfig.from_layers([0])
+        
+        assert config.use_layer_0 is True
+        assert config.use_layer_1 is False
+        assert config.use_layer_2 is False
+        assert config.use_layer_3 is False
+
+    def test_processor_config_from_layers_multiple(self):
+        """Test creating config from multiple layers."""
+        config = ProcessorConfig.from_layers([0, 1, 2])
+        
+        assert config.use_layer_0 is True
+        assert config.use_layer_1 is True
+        assert config.use_layer_2 is True
+        assert config.use_layer_3 is False
+
+    def test_processor_config_from_layers_llm_only(self):
+        """Test creating config with only LLM layer."""
+        config = ProcessorConfig.from_layers([3])
+        
+        assert config.use_layer_0 is False
+        assert config.use_layer_1 is False
+        assert config.use_layer_2 is False
+        assert config.use_layer_3 is True
+
+    def test_get_enabled_layers_from_layers(self):
+        """Test get_enabled_layers with from_layers factory."""
+        config = ProcessorConfig.from_layers([0, 2])
+        assert config.get_enabled_layers() == [0, 2]
+
 
 class TestMetadataProcessorWithConfig:
     """Tests for MetadataProcessor with analysis levels."""

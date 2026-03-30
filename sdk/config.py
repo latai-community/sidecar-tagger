@@ -64,6 +64,33 @@ class ProcessorConfig:
         
         return config
     
+    @classmethod
+    def from_layers(cls, layers: list[int]) -> "ProcessorConfig":
+        """
+        Factory method to create config from a list of layer numbers.
+        Example: from_layers([0, 1]) enables only layers 0 and 1.
+        """
+        config = cls(level=AnalysisLevel.STANDARD)
+        
+        # Disable all first
+        config.use_layer_0 = False
+        config.use_layer_1 = False
+        config.use_layer_2 = False
+        config.use_layer_3 = False
+        
+        # Enable specified layers
+        for layer in layers:
+            if layer == 0:
+                config.use_layer_0 = True
+            elif layer == 1:
+                config.use_layer_1 = True
+            elif layer == 2:
+                config.use_layer_2 = True
+            elif layer == 3:
+                config.use_layer_3 = True
+        
+        return config
+    
     def get_enabled_layers(self) -> list[int]:
         """Returns list of enabled layer numbers."""
         layers = []

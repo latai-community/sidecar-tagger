@@ -196,6 +196,59 @@ python cli/main.py path/to/files --overwrite
 python cli/main.py path/to/files --level deep --verbose --overwrite
 ```
 
+### Granular Layer Control (for testing)
+
+Use `--layers` to enable specific layers (overrides `--level`):
+
+```bash
+# Layer 0 only (hash dedup)
+python cli/main.py path/to/files --layers 0
+
+# Layers 0 + 1 (hash + OS metadata, no embeddings, no LLM)
+python cli/main.py path/to/files --layers 0,1
+
+# Layers 0 + 1 + 2 (hash + OS + embeddings, no LLM)
+python cli/main.py path/to/files --layers 0,1,2
+
+# Only Layer 3 (LLM only - requires file in cache)
+python cli/main.py path/to/files --layers 3
+```
+
+### Custom Thresholds
+
+```bash
+# Lower confidence threshold for Layer 1 shortcut
+python cli/main.py path/to/files --confidence-threshold 0.5
+
+# Lower similarity threshold for Layer 2 cache
+python cli/main.py path/to/files --similarity-threshold 0.7
+
+# Combine with granular layers
+python cli/main.py path/to/files --layers 0,1,2 --confidence-threshold 0.6
+```
+
+### CLI Reference
+
+| Flag | Alias | Description | Default |
+|------|-------|-------------|---------|
+| `--level` | `-l` | Predefined analysis level | `standard` |
+| `--layers` | - | Specific layers (comma-separated, overrides --level) | All based on level |
+| `--confidence-threshold` | - | Layer 1 shortcut threshold (0.0-1.0) | `0.8` |
+| `--similarity-threshold` | - | Layer 2 cache threshold (0.0-1.0) | `0.9` |
+| `--output-dir` | `-o` | Output directory for sidecar.json | `.` |
+| `--verbose` | `-v` | Enable detailed logging | `false` |
+| `--overwrite` | - | Replace existing sidecar.json | `false` |
+| `--min-confidence` | `-m` | Filter metadata by confidence | `0.0` |
+
+### Layer Reference
+
+| Layer | Name | Description | Cost |
+|-------|------|-------------|------|
+| 0 | Hash Gate | SHA-256 deduplication | $0 |
+| 1 | Native + OS | EXIFTOOL + file system metadata | $0 |
+| 2 | Embeddings | FastEmbed semantic cache | $0 |
+| 3 | LLM + Hint | Gemini with clustering context | $ |
+
 ---
 
 ## Development & Testing
