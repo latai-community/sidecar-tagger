@@ -227,19 +227,6 @@ python cli/main.py path/to/files --similarity-threshold 0.7
 python cli/main.py path/to/files --layers 0,1,2 --confidence-threshold 0.6
 ```
 
-### CLI Reference
-
-| Flag | Alias | Description | Default |
-|------|-------|-------------|---------|
-| `--level` | `-l` | Predefined analysis level | `standard` |
-| `--layers` | - | Specific layers (comma-separated, overrides --level) | All based on level |
-| `--confidence-threshold` | - | Layer 1 shortcut threshold (0.0-1.0) | `0.8` |
-| `--similarity-threshold` | - | Layer 2 cache threshold (0.0-1.0) | `0.9` |
-| `--output-dir` | `-o` | Output directory for sidecar.json | `.` |
-| `--verbose` | `-v` | Enable detailed logging | `false` |
-| `--overwrite` | - | Replace existing sidecar.json | `false` |
-| `--min-confidence` | `-m` | Filter metadata by confidence | `0.0` |
-
 ### Layer Reference
 
 | Layer | Name | Description | Cost |
@@ -248,6 +235,8 @@ python cli/main.py path/to/files --layers 0,1,2 --confidence-threshold 0.6
 | 1 | Native + OS | EXIFTOOL + file system metadata | $0 |
 | 2 | Embeddings | FastEmbed semantic cache | $0 |
 | 3 | LLM + Hint | Gemini with clustering context | $ |
+
+> **Note:** Full CLI reference with all flags and examples available in [docs/03-cli-reference.md](docs/03-cli-reference.md)
 
 ---
 
