@@ -278,6 +278,24 @@ class MetadataProcessor:
                 self._cleanup(image_to_send, ext)
                 return result
 
+            # Fallback: if Layer 1 was processed but confidence was too low for shortcut,
+            # and no further layers are enabled, return what we have from Layer 1
+            if 1 in layers_processed and local_context is not None:
+                if not local_context.internal_props:
+                    logger.debug(
+                        f" -> Layer 1: No embedded metadata found in '{filename}' "
+                        f"(only OS-level metadata available)"
+                    )
+                return {
+                    "file_hash": file_hash,
+                    "doc_type": local_context.file_extension,
+                    "tags": self._extract_tags_from_context(local_context),
+                    "confidence": self._calculate_layer1_confidence(local_context),
+                    "local_context": local_context.model_dump(),
+                    "source": "layer_1",
+                    "layers": layers_processed
+                }
+
             # If we got here without hitting any layer that returns, return minimal metadata
             return {
                 "file_hash": file_hash,
