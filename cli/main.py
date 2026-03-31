@@ -15,6 +15,7 @@ from typing import List
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sdk.processor import MetadataProcessor
+from sdk.config import AnalysisLevel, ProcessorConfig
 from sdk.exceptions import SidecarException
 from sdk.reporter import FindingsReporter
 
@@ -61,6 +62,28 @@ def main() -> None:
     parser.add_argument('--min-confidence', '-m', type=float, default=0.0, help='Filter metadata by confidence score.')
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable detailed process logging.')
     parser.add_argument('--overwrite', action='store_true', help='Replace existing sidecar.json if present.')
+    parser.add_argument(
+        '--level', '-l',
+        choices=['minimal', 'fast', 'standard', 'deep'],
+        default='standard',
+        help='Analysis depth level: minimal (hash only), fast (OS metadata), standard (with cache), deep (full AI)'
+    )
+    parser.add_argument(
+        '--layers',
+        help='Comma-separated list of layers to enable (0=Hash, 1=OS, 2=Embeddings, 3=LLM). Overrides --level if specified. Example: 0,1 or 0,1,2'
+    )
+    parser.add_argument(
+        '--confidence-threshold',
+        type=float,
+        default=0.8,
+        help='Confidence threshold for Layer 1 shortcut (0.0-1.0). Default: 0.8'
+    )
+    parser.add_argument(
+        '--similarity-threshold',
+        type=float,
+        default=0.9,
+        help='Similarity threshold for Layer 2 cache (0.0-1.0). Default: 0.9'
+    )
 
     args = parser.parse_args()
 
@@ -83,7 +106,25 @@ def main() -> None:
 
         logger.info(f"Indexing {len(files_to_process)} files into {output_path}...")
         
-        processor = MetadataProcessor(output_path=output_path)
+        # Create processor config: --layers overrides --level if specified
+        if args.layers:
+            # Parse comma-separated layer list
+            layer_list = [int(x.strip()) for x in args.layers.split(',')]
+            config = ProcessorConfig.from_layers(layer_list)
+            logger.info(f"Using granular layers: {layer_list}")
+        else:
+            config = ProcessorConfig.from_level(AnalysisLevel(args.level))
+            logger.info(f"Using analysis level: {args.level}")
+        
+        # Apply custom thresholds if specified
+        config.layer_1_confidence_threshold = args.confidence_threshold
+        config.layer_2_similarity_threshold = args.similarity_threshold
+        
+        logger.info(f"Layers enabled: {config.get_enabled_layers()}")
+        logger.info(f"Confidence threshold: {config.layer_1_confidence_threshold}")
+        logger.info(f"Similarity threshold: {config.layer_2_similarity_threshold}")
+        
+        processor = MetadataProcessor(config=config, output_path=output_path)
         processor.process_files(files_to_process)
 
         logger.info(f"Done. Manifest successfully generated at {output_path}")

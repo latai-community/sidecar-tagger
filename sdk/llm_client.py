@@ -9,7 +9,7 @@ import os
 import json
 import time
 import logging
-import google.generativeai as genai
+import google.genai as genai
 from typing import Optional, List, Dict
 from dotenv import load_dotenv
 

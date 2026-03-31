@@ -1,6 +1,6 @@
 # Sidecar-tagger (v2)
 
-Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the high-performance core for semantic search UIs and OS-level file management systems. It leverages a proprietary 5-Layer pipeline to transform raw files into semantically-enriched, structured manifests with zero redundant processing.
+Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the high-performance core for semantic search UIs and OS-level file management systems. It leverages a proprietary **4-Layer Pipeline (MVP)** to transform raw files into semantically-enriched, structured manifests with zero redundant processing.
 
 <p align="center">
   <img src="assets/sidecar-tagger-logo.png" alt="Sidecar-tagger Logo" width="150">
@@ -28,23 +28,35 @@ Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the h
 ## Core Philosophy: The Contextual Motor
 Unlike traditional taggers, Sidecar-tagger v2 doesn't just read content; it understands **environment**. By combining OS-level facts, neighborhood patterns, and multimodal AI, it generates high-precision metadata while minimizing API costs.
 
-## The 5-Layer Engine Architecture
-The system processes each file through five sequential filters to maximize efficiency and reduce costs (it focuses on **LOCAL processing** before Cloud or AI consumption):
+## The 4-Layer Pipeline Architecture
+The system processes each file through four sequential filters to maximize efficiency and reduce costs (it focuses on **LOCAL processing** before Cloud or AI consumption):
 
-1. **LAYER 0: Binary Identity (Hash Gate)**: SHA-256 deduplication. metadata is cloned instantly if the file is known ($0 cost).
-2. **LAYER 1: Context Enrichment**: Extraction of OS facts (parent folders, owner, timestamps) and internal headers.
-3. **LAYER 2: Collective Intelligence (Clustering)**: Analyzes "Neighborhood Wisdom" to group similar files.
-4. **LAYER 3: Semantic Identity (Embeddings)**: Local **ONNX vectors** (FastEmbed) detect content reuse.
-5. **LAYER 4: Cognitive Analysis (Gemini 1.5)**: High-precision LLM analysis injected with previous context to eliminate hallucinations.
+1. **LAYER 0: Hash Gate**: SHA-256 deduplication. Metadata is cloned instantly if the file is known ($0 cost).
+2. **LAYER 1: Native + OS Metadata**: Extracts EXIFTOOL metadata (author, title, keywords) and OS facts (filename, path, size, timestamps). If confidence ≥ 0.8 → shortcut (no AI needed).
+3. **LAYER 2: Embeddings (Semantic Cache)**: Local **ONNX vectors** (FastEmbed) detect content reuse. If similarity ≥ 0.9 → return cached metadata.
+4. **LAYER 3: LLM + Clustering Hint**: High-precision LLM analysis (Gemini) injected with clustering context to eliminate hallucinations.
+
+---
+
+## Analysis Levels (Configurable)
+
+You can choose how deep the analysis goes based on your cost/precision needs:
+
+| Level | Layers | Cost | Precision | Use Case |
+|-------|--------|------|-----------|----------|
+| **minimal** | L0 | $0 | Low | Fast dedup only |
+| **fast** | L0 + L1 | $0 | Medium | Quick scan with OS metadata |
+| **standard** | L0 + L1 + L2 | $0 | High | Default - uses semantic cache |
+| **deep** | L0 + L1 + L2 + L3 | $ | Very High | Maximum precision with AI |
 
 ---
 
 ## Tech Stack
 - **Language**: Python 3.11+ (Strictly Typed)
-- **AI Models**: Google Gemini 1.5 Flash / Pro / 2.0
+- **AI Models**: Google Gemini 2.0 Flash
 - **Local Embeddings**: FastEmbed (ONNX)
 - **Metadata Format**: Pydantic-validated JSON
-- **Execution**: Recursive, Context-Aware Pipeline
+- **Execution**: 4-Layer Pipeline (configurable Analysis Levels)
 
 ---
 
@@ -53,6 +65,10 @@ Before you begin, ensure you have the following installed:
 - **Python 3.11 or higher**
 - **Git**
 - **A Google Gemini API Key** (See [Configure API Keys](#3-configure-api-keys))
+- **ExifTool** (external system dependency):
+  - Windows: `winget install exiftool`
+  - macOS: `brew install exiftool`
+  - Linux: `sudo apt-get install -y libimage-exiftool-perl`
 
 ---
 
@@ -143,13 +159,88 @@ GEMINI_MODEL=gemini-2.5-flash
 ## Running the Engine
 You can run the engine against a single file or a directory.
 
+### Basic Commands
+
 ```bash
-# Basic run on a directory
+# Basic run on a directory (default: standard level)
 python cli/main.py path/to/your/files
 
 # Verbose mode with overwrite enabled
 python cli/main.py path/to/data --verbose --overwrite
 ```
+
+### Analysis Levels
+
+Use the `--level` or `-l` flag to control analysis depth:
+
+```bash
+# minimal: Hash dedup only ($0 cost, fastest)
+python cli/main.py path/to/files --level minimal
+
+# fast: Hash + OS metadata ($0 cost, ~100ms/file)
+python cli/main.py path/to/files --level fast
+
+# standard: Hash + OS + Semantic Cache (default, $0 cost)
+python cli/main.py path/to/files --level standard
+
+# deep: Full pipeline with LLM (uses API, highest precision)
+python cli/main.py path/to/files --level deep
+```
+
+### Other Options
+
+```bash
+# Custom output directory
+python cli/main.py path/to/files --output-dir ./output
+
+# Overwrite existing sidecar.json
+python cli/main.py path/to/files --overwrite
+
+# Combine options
+python cli/main.py path/to/files --level deep --verbose --overwrite
+```
+
+### Granular Layer Control (for testing)
+
+Use `--layers` to enable specific layers (overrides `--level`):
+
+```bash
+# Layer 0 only (hash dedup)
+python cli/main.py path/to/files --layers 0
+
+# Layers 0 + 1 (hash + OS metadata, no embeddings, no LLM)
+python cli/main.py path/to/files --layers 0,1
+
+# Layers 0 + 1 + 2 (hash + OS + embeddings, no LLM)
+python cli/main.py path/to/files --layers 0,1,2
+
+# Only Layer 3 (LLM only - requires file in cache)
+python cli/main.py path/to/files --layers 3
+```
+
+### Custom Thresholds
+
+```bash
+# Lower confidence threshold for Layer 1 shortcut
+python cli/main.py path/to/files --confidence-threshold 0.5
+
+# Lower similarity threshold for Layer 2 cache
+python cli/main.py path/to/files --similarity-threshold 0.7
+
+# Combine with granular layers
+python cli/main.py path/to/files --layers 0,1,2 --confidence-threshold 0.6
+```
+
+### Layer Reference
+
+| Layer | Name | Description | Cost |
+|-------|------|-------------|------|
+| 0 | Hash Gate | SHA-256 deduplication | $0 |
+| 1 | Native + OS | EXIFTOOL + file system metadata | $0 |
+| 2 | Embeddings | FastEmbed semantic cache | $0 |
+| 3 | LLM + Hint | Gemini with clustering context | $ |
+
+> **Note:** Full CLI reference with all flags and examples available in [docs/03-cli-reference.md](docs/03-cli-reference.md)
 
 ---
 
@@ -184,13 +275,13 @@ Ensure your `.env` file is in the root directory and contains the correct variab
 ```text
 sidecar-tagger/
 ├── cli/                # CLI entry point (main.py)
-├── sdk/                # Core 5-Layer Engine logic
-│   ├── context/        # Layer 1 & 2 (OS Facts & Clustering)
-│   ├── parsers/        # Layer-agnostic extractors (PDF, XLSX, etc.)
+├── sdk/                # Core 4-Layer Pipeline logic
+│   ├── context/        # Layer 1 (OS Facts) & Clustering Hint
+│   ├── parsers/        # Layer-agnostic extractors (PDF, XLSX, Images, TXT)
 │   ├── models/         # Pydantic schema definitions
 │   └── utils/          # Layer 0 (Hashing) & Helpers
+├── docs/               # Architecture decisions & issues
 ├── tests/              # Comprehensive test suite
-├── .gemini/            # AI Agent skills and standards
 └── list_models.py      # Model discovery utility
 ```
 
