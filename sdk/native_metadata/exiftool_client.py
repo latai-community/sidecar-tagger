@@ -2,22 +2,33 @@
 Title: ExifTool Client
 Abstract: Wrapper for ExifTool command-line interface to extract native metadata.
 Why: ExifTool is the industry standard for extracting metadata from 25k+ file formats.
-Dependencies: subprocess, json, logging
+Dependencies: subprocess, json, logging, platform
 License: Artistic License 2.0 (see LICENSE-EXIFTOOL)
 """
 import subprocess
 import json
 import logging
 import os
+import platform
 from pathlib import Path
 from typing import Optional, Dict, Any, List
 
 logger = logging.getLogger("ExifToolClient")
 
-SCRIPT_DIR = Path(__file__).parent.parent.parent
-EXIFTOOL_CMD = str(SCRIPT_DIR / "exiftool.exe")
+EXIFTOOL_CMD = "exiftool"
 
 SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".xlsx", ".png", ".jpg", ".jpeg", ".json", ".txt", ".md"}
+
+
+def _get_install_hint() -> str:
+    """Return OS-specific install command for ExifTool."""
+    system = platform.system()
+    if system == "Windows":
+        return "Install with: winget install exiftool"
+    elif system == "Darwin":
+        return "Install with: brew install exiftool"
+    else:
+        return "Install with: sudo apt-get install -y libimage-exiftool-perl"
 
 
 class ExifToolClient:
@@ -42,7 +53,7 @@ class ExifToolClient:
                 logger.info(f"ExifTool available: {result.stdout.strip()}")
                 return True
         except FileNotFoundError:
-            logger.warning("ExifTool not found in PATH")
+            logger.warning(f"ExifTool not found in PATH. {_get_install_hint()}")
         except Exception as e:
             logger.warning(f"ExifTool verification failed: {e}")
         return False
@@ -167,4 +178,4 @@ if __name__ == "__main__":
             if metadata:
                 print(f"Metadata keys: {list(metadata.keys())[:10]}")
     else:
-        print("ExifTool is NOT available. Install from https://exiftool.org/")
+        print("ExifTool is NOT available. " + _get_install_hint())

@@ -7,11 +7,12 @@ Dependencies: os, datetime, platform, pathlib, sdk.native_metadata
 import os
 import datetime
 import platform
+import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from sdk.models.metadata import LocalContext
 
-from sdk.native_metadata.exiftool_client import ExifToolClient
+from sdk.native_metadata.exiftool_client import ExifToolClient, _get_install_hint
 from sdk.native_metadata.tag_mapper import map_tags
 from sdk.native_metadata.confidence import calculate_confidence
 
@@ -81,6 +82,11 @@ class OSContextExtractor:
             Mapped native metadata or empty dict
         """
         if not self._exiftool.is_available():
+            logger = logging.getLogger("OSContextExtractor")
+            logger.warning(
+                f"ExifTool not available — skipping native metadata extraction for '{file_path}'. "
+                f"{_get_install_hint()}"
+            )
             return {}
         
         ext = Path(file_path).suffix.lower()

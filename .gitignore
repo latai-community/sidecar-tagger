@@ -30,3 +30,8 @@ TASKS.md
 .pytest_cache/
 *.pdf
 tmp/
+
+# ExifTool (external dependency - install via system package manager)
+exiftool.exe
+exiftool_files/
+exiftool

@@ -65,6 +65,10 @@ Before you begin, ensure you have the following installed:
 - **Python 3.11 or higher**
 - **Git**
 - **A Google Gemini API Key** (See [Configure API Keys](#3-configure-api-keys))
+- **ExifTool** (external system dependency):
+  - Windows: `winget install exiftool`
+  - macOS: `brew install exiftool`
+  - Linux: `sudo apt-get install -y libimage-exiftool-perl`
 
 ---
 
