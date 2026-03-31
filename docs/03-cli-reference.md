@@ -1,10 +1,10 @@
 # CLI Reference
 
-> Documentación completa de los comandos y flags disponibles en sidecar-tagger.
+> Complete documentation of all available commands and flags in sidecar-tagger.
 
 ---
 
-## Uso Básico
+## Basic Usage
 
 ```bash
 python cli/main.py <input> [options]
@@ -12,27 +12,27 @@ python cli/main.py <input> [options]
 
 ---
 
-## Flags Disponibles
+## Available Flags
 
-| Flag | Alias | Descripción | Default |
+| Flag | Alias | Description | Default |
 |------|-------|-------------|---------|
-| `--level` | `-l` | Nivel de análisis predefinido | `standard` |
-| `--layers` | - | Capas específicas (comma-separated, sobrescribe --level) | - |
-| `--confidence-threshold` | - | Threshold shortcut Capa 1 (0.0-1.0) | `0.8` |
-| `--similarity-threshold` | - | Threshold cache Capa 2 (0.0-1.0) | `0.9` |
-| `--output-dir` | `-o` | Directorio de salida para sidecar.json | `.` |
-| `--verbose` | `-v` | Habilitar logging detallado | `false` |
-| `--overwrite` | - | Reemplazar sidecar.json existente | `false` |
-| `--min-confidence` | `-m` | Filtrar metadata por confidence | `0.0` |
+| `--level` | `-l` | Predefined analysis level | `standard` |
+| `--layers` | - | Specific layers (comma-separated, overrides --level) | - |
+| `--confidence-threshold` | - | Layer 1 shortcut threshold (0.0-1.0) | `0.8` |
+| `--similarity-threshold` | - | Layer 2 cache threshold (0.0-1.0) | `0.9` |
+| `--output-dir` | `-o` | Output directory for sidecar.json | `.` |
+| `--verbose` | `-v` | Enable detailed logging | `false` |
+| `--overwrite` | - | Replace existing sidecar.json | `false` |
+| `--min-confidence` | `-m` | Filter metadata by confidence | `0.0` |
 
 ---
 
 ## Analysis Levels
 
-Niveles predefinidos que enablean un conjunto de capas:
+Predefined levels that enable a specific set of layers:
 
 ```bash
-# minimal: Solo hash dedup ($0 cost, fastest)
+# minimal: Hash dedup only ($0 cost, fastest)
 python cli/main.py path --level minimal
 
 # fast: Hash + OS metadata ($0 cost, ~100ms/file)
@@ -41,14 +41,14 @@ python cli/main.py path --level fast
 # standard: Hash + OS + Semantic Cache (default, $0 cost)
 python cli/main.py path --level standard
 
-# deep: Pipeline completo con LLM (usa API)
+# deep: Full pipeline with LLM (uses API)
 python cli/main.py path --level deep
 ```
 
-### Capas por Level
+### Layers by Level
 
-| Level | Capas | Costo |
-|-------|-------|-------|
+| Level | Layers | Cost |
+|-------|--------|------|
 | minimal | 0 | $0 |
 | fast | 0, 1 | $0 |
 | standard | 0, 1, 2 | $0 |
@@ -56,45 +56,45 @@ python cli/main.py path --level deep
 
 ---
 
-## Control Granular de Capas
+## Granular Layer Control
 
-Para testing específico de cada capa, usá `--layers` (sobrescribe `--level`):
+For testing specific layers, use `--layers` (overrides `--level`):
 
 ```bash
-# Solo Capa 0 (hash dedup)
+# Layer 0 only (hash dedup)
 python cli/main.py path --layers 0
 
-# Capas 0 + 1 (hash + OS, sin embeddings, sin LLM)
+# Layers 0 + 1 (hash + OS, no embeddings, no LLM)
 python cli/main.py path --layers 0,1
 
-# Capas 0 + 1 + 2 (hash + OS + embeddings, sin LLM)
+# Layers 0 + 1 + 2 (hash + OS + embeddings, no LLM)
 python cli/main.py path --layers 0,1,2
 
-# Solo Capa 3 (LLM solo - requiere archivo en cache)
+# Layer 3 only (LLM only - requires file in cache)
 python cli/main.py path --layers 3
 ```
 
 ---
 
-## Thresholds Personalizados
+## Custom Thresholds
 
 ```bash
-# Lower confidence threshold para Layer 1 shortcut
+# Lower confidence threshold for Layer 1 shortcut
 python cli/main.py path --confidence-threshold 0.5
 
-# Lower similarity threshold para Layer 2 cache
+# Lower similarity threshold for Layer 2 cache
 python cli/main.py path --similarity-threshold 0.7
 
-# Combinar con capas granulares
+# Combine with granular layers
 python cli/main.py path --layers 0,1,2 --confidence-threshold 0.6
 ```
 
 ---
 
-## Referencia de Capas
+## Layer Reference
 
-| Capa | Nombre | Descripción | Costo |
-|------|--------|-------------|-------|
+| Layer | Name | Description | Cost |
+|-------|------|-------------|------|
 | 0 | Hash Gate | SHA-256 deduplication | $0 |
 | 1 | Native + OS | EXIFTOOL + file system metadata | $0 |
 | 2 | Embeddings | FastEmbed semantic cache | $0 |
@@ -102,40 +102,40 @@ python cli/main.py path --layers 0,1,2 --confidence-threshold 0.6
 
 ---
 
-## Ejemplos Completos
+## Complete Examples
 
 ```bash
-# Scan básico con nivel default
-python cli/main.py ./documentos
+# Basic scan with default level
+python cli/main.py ./documents
 
-# Scan verbose con overwrite
-python cli/main.py ./documentos --verbose --overwrite
+# Verbose scan with overwrite
+python cli/main.py ./documents --verbose --overwrite
 
-# Análisis profundo con output personalizado
-python cli/main.py ./documentos --level deep --output-dir ./output --verbose
+# Deep analysis with custom output
+python cli/main.py ./documents --level deep --output-dir ./output --verbose
 
-# Solo hash dedup (para encontrar duplicados)
-python cli/main.py ./documentos --layers 0
+# Hash dedup only (to find duplicates)
+python cli/main.py ./documents --layers 0
 
-# Solo metadata básica (sin API)
-python cli/main.py ./documentos --layers 0,1
+# Basic metadata only (no API)
+python cli/main.py ./documents --layers 0,1
 
-# Testing de similarity threshold bajo
-python cli/main.py ./documentos --layers 0,1,2 --similarity-threshold 0.7
+# Testing low similarity threshold
+python cli/main.py ./documents --layers 0,1,2 --similarity-threshold 0.7
 ```
 
 ---
 
 ## Shortcuts
 
-- **Layer 1**: Si confidence >= threshold → return temprano (capas 2-3 saltadas)
-- **Layer 2**: Si similarity >= threshold → return cacheado (capa 3 saltada)
+- **Layer 1**: If confidence >= threshold → early return (layers 2-3 skipped)
+- **Layer 2**: If similarity >= threshold → cached return (layer 3 skipped)
 
 ---
 
-## Archivos de Salida
+## Output Files
 
-- `sidecar.json` - Metadata consolidada
-- `findings.md` - Reporte de análisis
+- `sidecar.json` - Consolidated metadata
+- `findings.md` - Analysis report
 
-Ambos se generan en `--output-dir` (default: directorio actual).
+Both are generated in `--output-dir` (default: current directory).

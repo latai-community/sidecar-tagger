@@ -29,3 +29,4 @@ TASKS.md
 # Test artifacts
 .pytest_cache/
 *.pdf
+tmp/

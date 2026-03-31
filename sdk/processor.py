@@ -297,25 +297,28 @@ class MetadataProcessor:
     def _calculate_layer1_confidence(self, local_context: LocalContext) -> float:
         """
         Calculate confidence score based on available Layer 1 metadata.
-        This is a simplified version - full implementation would use EXIFTOOL.
+        Uses EXIFTOOL data via internal_props (lowercase keys from tag_mapper).
         """
         score = 0.0
         
-        # Check internal_props for author/title (from file headers)
         if local_context.internal_props:
-            if local_context.internal_props.get("Author") and local_context.internal_props.get("Title"):
+            has_author = bool(local_context.internal_props.get("author"))
+            has_title = bool(local_context.internal_props.get("title"))
+            
+            if has_author and has_title:
                 score += 0.5
-            elif local_context.internal_props.get("Author") or local_context.internal_props.get("Title"):
+            elif has_author or has_title:
                 score += 0.25
             
-            if local_context.internal_props.get("Keywords") or local_context.internal_props.get("Subject"):
+            if local_context.internal_props.get("keywords") or local_context.internal_props.get("subject"):
                 score += 0.2
+            
+            if local_context.internal_props.get("date") or local_context.internal_props.get("create_date"):
+                score += 0.1
         
-        # Check path keywords
         if local_context.path_keywords:
             score += 0.1
         
-        # Check if we have meaningful filename (not generic)
         if local_context.filename and len(local_context.filename) > 5:
             score += 0.1
         
@@ -326,19 +329,16 @@ class MetadataProcessor:
         tags = []
         
         if local_context.internal_props:
-            # Add author if present
-            if local_context.internal_props.get("Author"):
-                tags.append(local_context.internal_props["Author"])
+            if local_context.internal_props.get("author"):
+                tags.append(local_context.internal_props["author"])
             
-            # Add keywords if present
-            keywords = local_context.internal_props.get("Keywords", "")
+            keywords = local_context.internal_props.get("keywords", "")
             if keywords:
                 if isinstance(keywords, str):
                     tags.extend([t.strip() for t in keywords.split(",")])
         
-        # Add path keywords
         if local_context.path_keywords:
-            tags.extend(local_context.path_keywords[:5])  # Limit to 5
+            tags.extend(local_context.path_keywords[:5])
         
         return list(set(tags))
 
