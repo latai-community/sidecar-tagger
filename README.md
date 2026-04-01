@@ -1,25 +1,57 @@
 # Sidecar-tagger (v2)
 
-Sidecar-tagger is a **Context-Aware Metadata Engine** designed to serve as the high-performance core for semantic search UIs and OS-level file management systems. It leverages a proprietary **4-Layer Pipeline (MVP)** to transform raw files into semantically-enriched, structured manifests with zero redundant processing.
+<p align="center">
+  <a href="https://www.python.org/downloads/">
+    <img src="https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=fff" alt="Python 3.11+">
+  </a>
+  <a href="https://github.com/latai-community/sidecar-tagger/stargazers">
+    <img src="https://img.shields.io/github/stars/latai-community/sidecar-tagger?style=social" alt="GitHub stars">
+  </a>
+  <a href="https://github.com/latai-community/sidecar-tagger/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-green" alt="License">
+  </a>
+  <a href="https://github.com/latai-community/sidecar-tagger/commits/main/">
+    <img src="https://img.shields.io/github/last-commit/latai-community/sidecar-tagger" alt="Last commit">
+  </a>
+  <a href="https://github.com/latai-community/sidecar-tagger/issues">
+    <img src="https://img.shields.io/github/issues/latai-community/sidecar-tagger" alt="Issues">
+  </a>
+  <a href="https://github.com/latai-community/sidecar-tagger/pulls">
+    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs Welcome">
+  </a>
+</p>
 
 <p align="center">
-  <img src="assets/sidecar-tagger-logo.png" alt="Sidecar-tagger Logo" width="150">
+  <a href="https://ai.google.dev/gemini-api/docs">
+    <img src="https://img.shields.io/badge/Google%20Gemini-886FBF?logo=googlegemini&logoColor=fff" alt="Google Gemini">
+  </a>
+  <a href="https://docs.pydantic.dev/">
+    <img src="https://img.shields.io/badge/Pydantic-E92063?logo=pydantic&logoColor=fff" alt="Pydantic">
+  </a>
+  <a href="https://www.pytest.org/">
+    <img src="https://img.shields.io/badge/pytest-0A9EDC?logo=pytest&logoColor=fff" alt="pytest">
+  </a>
+  <a href="https://github.com/embedchain/fastembed">
+    <img src="https://img.shields.io/badge/FastEmbed-ONNX-orange" alt="FastEmbed">
+  </a>
+  <img src="https://img.shields.io/badge/CLI-Click-5ba24a" alt="CLI">
 </p>
+
+<p align="center">
+  <em>Context-Aware Metadata Engine for semantic search UIs and OS-level file management systems.</em>
+</p>
+
+---
+
+Sidecar-tagger leverages a proprietary **4-Layer Pipeline (MVP)** to transform raw files into semantically-enriched, structured manifests with zero redundant processing.
 
 ## Table of Contents
 - [Core Philosophy](#core-philosophy-the-contextual-motor)
-- [The 5-Layer Engine Architecture](#the-5-layer-engine-architecture)
+- [The 4-Layer Engine Architecture](#the-4-layer-pipeline-architecture)
 - [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
-  - [1. Clone and Navigate](#1-clone-and-navigate)
-  - [2. Environment Setup (Python)](#2-environment-setup-python)
-  - [3. Configure API Keys](#3-configure-api-keys)
-  - [4. Install Dependencies](#4-install-dependencies)
-  - [5. Available Model Discovery](#5-available-model-discovery)
 - [Running the Engine](#running-the-engine)
 - [Development & Testing](#development--testing)
-- [Troubleshooting](#troubleshooting)
 - [Project Structure](#project-structure)
 - [License](#license)
 
@@ -60,98 +92,22 @@ You can choose how deep the analysis goes based on your cost/precision needs:
 
 ---
 
-## Prerequisites
-Before you begin, ensure you have the following installed:
-- **Python 3.11 or higher**
-- **Git**
-- **A Google Gemini API Key** (See [Configure API Keys](#3-configure-api-keys))
-- **ExifTool** (external system dependency):
-  - Windows: `winget install exiftool`
-  - macOS: `brew install exiftool`
-  - Linux: `sudo apt-get install -y libimage-exiftool-perl`
-
----
-
 ## Getting Started
 
-### 1. Clone and Navigate
+See the [Setup Guide](docs/01-setup.md) for complete installation instructions, including:
+- Prerequisites (Python 3.11+, Git, ExifTool)
+- Virtual environment setup (Windows, macOS, Linux)
+- API key configuration
+- Model discovery
+- Troubleshooting
+
+**Quick start:**
 ```bash
 git clone https://github.com/latai-community/sidecar-tagger.git
 cd sidecar-tagger
-```
-
-### 2. Environment Setup (Python)
-It is highly recommended to use a virtual environment to avoid conflicts with other Python projects.
-
-#### **Windows 11 (PowerShell)**
-```powershell
-# Create the virtual environment
 python -m venv .venv
-
-# Activate the virtual environment
-.\.venv\Scripts\Activate.ps1
-```
-
-#### **Linux / macOS**
-```bash
-# Create the virtual environment
-python3 -m venv .venv
-
-# Activate the virtual environment
-source .venv/bin/activate
-```
-
-### 3. Configure API Keys
-The engine requires a **Google Gemini API Key** for Layer 4 analysis.
-
-1. **Get your key:** Visit the [Google AI Studio](https://aistudio.google.com/app/apikey) to generate a free or pay-as-you-go API key.
-2. **Setup your environment file:**
-   - Copy the example file: `cp .env.example .env`
-   - Open `.env` and replace `your_api_key_here` with your actual key.
-
-**Example `.env` file:**
-```env
-# Your actual key looks like this: AIzaSy...
-GEMINI_API_KEY=AIzaSyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6
-GEMINI_MODEL=gemini-2.0-flash
-LLM_PROVIDER=gemini
-```
-
-### 4. Install Dependencies
-Ensure your virtual environment is activated, then run:
-```bash
+source .venv/bin/activate  # On Windows: .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-```
-
-### 5. Available Model Discovery
-If you receive a `404: model not found` error, your API key might not have access to the default model in your region. You can use the included discovery script to find models you **can** use.
-
-**Quick test (recommended - no quota used):**
-```powershell
-# Windows
-.\.venv\Scripts\python.exe list_models.py
-
-# Linux / macOS
-python3 list_models.py
-```
-
-This uses `count_tokens` to verify model availability without spending your quota.
-
-**Full test (uses quota):**
-```powershell
-# Windows
-.\.venv\Scripts\python.exe list_models.py --mode full
-
-# Linux / macOS
-python3 list_models.py --mode full
-```
-
-This uses actual `generate_content` requests to confirm models respond correctly. Useful to check if your quota is exhausted.
-
-**Update your .env:**
-After running the script, copy the recommended model name from the output and update your `.env` file:
-```env
-GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ---
@@ -252,22 +208,6 @@ This project follows strict engineering standards. All PRs must pass the test su
 # Run all tests using pytest
 pytest
 ```
-
----
-
-## Troubleshooting
-
-### Windows "Execution Policy" Error
-If you cannot activate the virtual environment on Windows, run this command in an Administrator PowerShell:
-```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-### "ImportError: cannot import name..."
-If tests fail with an `ImportError`, ensure you have installed the requirements (`pip install -r requirements.txt`) and that you are running `pytest` from the project root with the virtual environment activated.
-
-### "GEMINI_API_KEY not found"
-Ensure your `.env` file is in the root directory and contains the correct variable name: `GEMINI_API_KEY`.
 
 ---
 
