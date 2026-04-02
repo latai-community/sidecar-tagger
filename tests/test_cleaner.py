@@ -3,7 +3,7 @@ import pytest
 import logging
 from pathlib import Path
 from unittest.mock import patch, MagicMock
-from sdk.cleaner import SidecarCleaner, CleanResult, TARGET_FILES
+from sidecar_tagger.sdk.cleaner import SidecarCleaner, CleanResult, TARGET_FILES
 
 logging.disable(logging.CRITICAL)
 
@@ -160,7 +160,7 @@ class TestCleanResult:
 
 class TestCLISubcommands:
     def test_process_subcommand_preserves_flags(self):
-        from cli.main import create_parser
+        from sidecar_tagger.cli.main import create_parser
         parser = create_parser()
 
         args = parser.parse_args(["process", "./docs", "--level", "deep", "-v", "-o", "./out"])
@@ -172,7 +172,7 @@ class TestCLISubcommands:
         assert args.output_dir == "./out"
 
     def test_clean_subcommand_accepts_path_and_dry_run(self):
-        from cli.main import create_parser
+        from sidecar_tagger.cli.main import create_parser
         parser = create_parser()
 
         args = parser.parse_args(["clean", "-p", "./test", "-n"])
@@ -182,7 +182,7 @@ class TestCLISubcommands:
         assert args.dry_run is True
 
     def test_clean_subcommand_defaults(self):
-        from cli.main import create_parser
+        from sidecar_tagger.cli.main import create_parser
         parser = create_parser()
 
         args = parser.parse_args(["clean"])
@@ -192,7 +192,7 @@ class TestCLISubcommands:
         assert args.dry_run is False
 
     def test_requires_subcommand(self):
-        from cli.main import create_parser
+        from sidecar_tagger.cli.main import create_parser
         parser = create_parser()
 
         with pytest.raises(SystemExit):
@@ -201,7 +201,7 @@ class TestCLISubcommands:
 
 class TestCLIIntegration:
     def test_run_clean_dry_run(self, mock_directory_tree, capsys):
-        from cli.main import run_clean
+        from sidecar_tagger.cli.main import run_clean
         args = MagicMock()
         args.path = str(mock_directory_tree)
         args.dry_run = True
@@ -216,7 +216,7 @@ class TestCLIIntegration:
         assert (mock_directory_tree / "sidecar.json").exists()
 
     def test_run_clean_actual_clean(self, mock_directory_tree, capsys):
-        from cli.main import run_clean
+        from sidecar_tagger.cli.main import run_clean
         args = MagicMock()
         args.path = str(mock_directory_tree)
         args.dry_run = False
@@ -232,7 +232,7 @@ class TestCLIIntegration:
         assert not (mock_directory_tree / "findings.md").exists()
 
     def test_run_clean_missing_path(self, capsys):
-        from cli.main import run_clean
+        from sidecar_tagger.cli.main import run_clean
         args = MagicMock()
         args.path = "/nonexistent/path"
         args.dry_run = False
@@ -241,7 +241,7 @@ class TestCLIIntegration:
             run_clean(args)
 
     def test_run_clean_with_errors(self, tmp_path, capsys):
-        from cli.main import run_clean
+        from sidecar_tagger.cli.main import run_clean
         (tmp_path / "sidecar.json").write_text("{}")
 
         args = MagicMock()

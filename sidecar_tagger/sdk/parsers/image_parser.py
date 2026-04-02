@@ -10,8 +10,8 @@ import logging
 from typing import Dict, Any, List
 from PIL import Image
 from PIL.ExifTags import TAGS
-from sdk.parsers.base_parser import BaseParser
-from sdk.exceptions import ParserError
+from sidecar_tagger.sdk.parsers.base_parser import BaseParser
+from sidecar_tagger.sdk.exceptions import ParserError
 
 logger = logging.getLogger(__name__)
 

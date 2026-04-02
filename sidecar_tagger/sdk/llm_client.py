@@ -13,8 +13,8 @@ import google.genai as genai
 from typing import Optional, List, Dict
 from dotenv import load_dotenv
 
-from sdk.models.metadata import FileMetadata, LocalContext, ClusterHint
-from sdk.exceptions import LLMClientError
+from sidecar_tagger.sdk.models.metadata import FileMetadata, LocalContext, ClusterHint
+from sidecar_tagger.sdk.exceptions import LLMClientError
 
 load_dotenv(override=True)
 logger = logging.getLogger("LLMClient")

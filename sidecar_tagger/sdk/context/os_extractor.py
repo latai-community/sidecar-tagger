@@ -10,11 +10,11 @@ import platform
 import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any
-from sdk.models.metadata import LocalContext
+from sidecar_tagger.sdk.models.metadata import LocalContext
 
-from sdk.native_metadata.exiftool_client import ExifToolClient, _get_install_hint
-from sdk.native_metadata.tag_mapper import map_tags
-from sdk.native_metadata.confidence import calculate_confidence
+from sidecar_tagger.sdk.native_metadata.exiftool_client import ExifToolClient, _get_install_hint
+from sidecar_tagger.sdk.native_metadata.tag_mapper import map_tags
+from sidecar_tagger.sdk.native_metadata.confidence import calculate_confidence
 
 
 class OSContextExtractor:

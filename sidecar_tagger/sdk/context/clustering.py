@@ -8,7 +8,7 @@ import os
 import difflib
 from typing import List, Dict, Tuple
 from collections import defaultdict
-from sdk.models.metadata import ClusterHint
+from sidecar_tagger.sdk.models.metadata import ClusterHint
 
 class ClusterManager:
     """

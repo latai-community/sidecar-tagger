@@ -8,7 +8,7 @@ LLM-Hints: All new parsers must inherit from this class and implement the extrac
 
 from abc import ABC, abstractmethod
 from typing import Dict, Any
-from sdk.exceptions import ParserError
+from sidecar_tagger.sdk.exceptions import ParserError
 
 class BaseParser(ABC):
     """

@@ -12,14 +12,11 @@ import logging
 from typing import List
 from pathlib import Path
 
-# Add project root to sys.path for robust relative imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from sdk.processor import MetadataProcessor
-from sdk.config import AnalysisLevel, ProcessorConfig
-from sdk.exceptions import SidecarException
-from sdk.reporter import FindingsReporter
-from sdk.cleaner import SidecarCleaner
+from sidecar_tagger.sdk.processor import MetadataProcessor
+from sidecar_tagger.sdk.config import AnalysisLevel, ProcessorConfig
+from sidecar_tagger.sdk.exceptions import SidecarException
+from sidecar_tagger.sdk.reporter import FindingsReporter
+from sidecar_tagger.sdk.cleaner import SidecarCleaner
 
 # Logger configuration
 logger = logging.getLogger("SidecarCLI")

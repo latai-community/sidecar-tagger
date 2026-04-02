@@ -9,7 +9,7 @@ import logging
 from typing import List
 import numpy as np
 from fastembed import TextEmbedding
-from sdk.exceptions import CacheError
+from sidecar_tagger.sdk.exceptions import CacheError
 
 logger = logging.getLogger(__name__)
 

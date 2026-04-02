@@ -10,15 +10,15 @@ import json
 import logging
 from typing import List, Dict, Any, Optional
 
-from sdk.config import ProcessorConfig, AnalysisLevel
-from sdk.models.metadata import FileMetadata, LocalContext, ClusterHint
-from sdk.parsers import PdfParser, XlsxParser, ImageParser, TxtParser
-from sdk.llm_client import LLMClient
-from sdk.embeddings_client import LocalEmbeddings
-from sdk.exceptions import SidecarException, ParserError, LLMClientError, CacheError
-from sdk.utils.hashing import calculate_sha256
-from sdk.context.os_extractor import OSContextExtractor
-from sdk.context.clustering import ClusterManager
+from sidecar_tagger.sdk.config import ProcessorConfig, AnalysisLevel
+from sidecar_tagger.sdk.models.metadata import FileMetadata, LocalContext, ClusterHint
+from sidecar_tagger.sdk.parsers import PdfParser, XlsxParser, ImageParser, TxtParser
+from sidecar_tagger.sdk.llm_client import LLMClient
+from sidecar_tagger.sdk.embeddings_client import LocalEmbeddings
+from sidecar_tagger.sdk.exceptions import SidecarException, ParserError, LLMClientError, CacheError
+from sidecar_tagger.sdk.utils.hashing import calculate_sha256
+from sidecar_tagger.sdk.context.os_extractor import OSContextExtractor
+from sidecar_tagger.sdk.context.clustering import ClusterManager
 
 # Configuration for Logging
 logging.basicConfig(

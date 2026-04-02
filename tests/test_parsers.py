@@ -1,8 +1,8 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from sdk.parsers.pdf_parser import PdfParser
-from sdk.parsers.xlsx_parser import XlsxParser
-from sdk.parsers.image_parser import ImageParser
+from sidecar_tagger.sdk.parsers.pdf_parser import PdfParser
+from sidecar_tagger.sdk.parsers.xlsx_parser import XlsxParser
+from sidecar_tagger.sdk.parsers.image_parser import ImageParser
 import os
 
 # --- PDF Parser Tests ---

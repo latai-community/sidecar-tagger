@@ -1,8 +1,8 @@
 import os
 import pytest
 from unittest.mock import patch, MagicMock
-from sdk.processor import MetadataProcessor
-from sdk.models.metadata import FileMetadata
+from sidecar_tagger.sdk.processor import MetadataProcessor
+from sidecar_tagger.sdk.models.metadata import FileMetadata
 
 @pytest.fixture
 def mock_llm_response():
@@ -30,7 +30,7 @@ def test_semantic_cache_skips_llm(tmp_path, mock_llm_response):
     file2.write_text("This is identical semantic content for testing cache.")
 
     # Patch LLM generate_metadata to track calls
-    with patch("sdk.processor.LLMClient.generate_metadata", return_value=mock_llm_response) as mock_llm:
+    with patch("sidecar_tagger.sdk.processor.LLMClient.generate_metadata", return_value=mock_llm_response) as mock_llm:
         # Step 1: Process file1 (Cache Miss)
         processor.process_files([str(file1)])
         assert mock_llm.call_count == 1
@@ -51,13 +51,13 @@ def test_semantic_cache_persistence(tmp_path, mock_llm_response):
 
     # Instance 1: Initial extraction (Cache Miss)
     processor1 = MetadataProcessor(output_path=str(sidecar_file))
-    with patch("sdk.processor.LLMClient.generate_metadata", return_value=mock_llm_response):
+    with patch("sidecar_tagger.sdk.processor.LLMClient.generate_metadata", return_value=mock_llm_response):
         processor1.process_files([str(file1)])
     
     # Instance 2: Should load the sidecar and hit the cache
     processor2 = MetadataProcessor(output_path=str(sidecar_file))
     
-    with patch("sdk.processor.LLMClient.generate_metadata") as mock_llm_instance2:
+    with patch("sidecar_tagger.sdk.processor.LLMClient.generate_metadata") as mock_llm_instance2:
         processor2.extract_metadata(str(file1))
         # Should not call LLM because it loaded from the sidecar file
         mock_llm_instance2.assert_not_called()

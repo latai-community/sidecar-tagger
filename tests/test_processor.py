@@ -3,9 +3,9 @@ import json
 import pytest
 import logging
 from unittest.mock import patch, MagicMock
-from sdk.processor import MetadataProcessor
-from sdk.models.metadata import FileMetadata
-from sdk.exceptions import ParserError, LLMClientError
+from sidecar_tagger.sdk.processor import MetadataProcessor
+from sidecar_tagger.sdk.models.metadata import FileMetadata
+from sidecar_tagger.sdk.exceptions import ParserError, LLMClientError
 
 # Disable logging during tests to keep output clean
 logging.disable(logging.CRITICAL)
@@ -50,8 +50,8 @@ def test_extract_metadata_pdf_flow(mock_pdf, mock_llm_response):
     processor = MetadataProcessor()
     
     # Mocking the Parser and LLM Client
-    with patch("sdk.parsers.PdfParser.extract", return_value={"text": "Real PDF Content", "thumbnail_path": None}):
-        with patch("sdk.llm_client.LLMClient.generate_metadata", return_value=mock_llm_response):
+    with patch("sidecar_tagger.sdk.parsers.PdfParser.extract", return_value={"text": "Real PDF Content", "thumbnail_path": None}):
+        with patch("sidecar_tagger.sdk.llm_client.LLMClient.generate_metadata", return_value=mock_llm_response):
             metadata = processor.extract_metadata(mock_pdf)
             assert metadata["doc_type"] == "pdf_document"
             assert "pdf" in metadata["tags"]
@@ -64,8 +64,8 @@ def test_extract_metadata_txt_flow(mock_txt, mock_llm_response):
     mock_llm_response.doc_type = "text_file"
     mock_llm_response.tags = ["txt", "test"]
     
-    with patch("sdk.parsers.TxtParser.extract", return_value={"text": "Hello World Notes"}):
-        with patch("sdk.llm_client.LLMClient.generate_metadata", return_value=mock_llm_response):
+    with patch("sidecar_tagger.sdk.parsers.TxtParser.extract", return_value={"text": "Hello World Notes"}):
+        with patch("sidecar_tagger.sdk.llm_client.LLMClient.generate_metadata", return_value=mock_llm_response):
             metadata = processor.extract_metadata(mock_txt)
             assert metadata["doc_type"] == "text_file"
             assert "txt" in metadata["tags"]
@@ -78,7 +78,7 @@ def test_processor_error_handling(mock_pdf):
     processor = MetadataProcessor()
     
     # Simulate a ParserError being raised
-    with patch("sdk.parsers.PdfParser.extract", side_effect=ParserError("Corrupt PDF")):
+    with patch("sidecar_tagger.sdk.parsers.PdfParser.extract", side_effect=ParserError("Corrupt PDF")):
         metadata = processor.extract_metadata(mock_pdf)
         assert metadata["doc_type"] == "error"
         assert "Corrupt PDF" in metadata["context"]
@@ -88,8 +88,8 @@ def test_full_process_files_io(mock_pdf, temp_sidecar, mock_llm_response):
     """Test the full processing flow and file output with the new manifest format."""
     processor = MetadataProcessor(output_path=temp_sidecar)
     
-    with patch("sdk.parsers.PdfParser.extract", return_value={"text": "Mock Content", "thumbnail_path": None}):
-        with patch("sdk.llm_client.LLMClient.generate_metadata", return_value=mock_llm_response):
+    with patch("sidecar_tagger.sdk.parsers.PdfParser.extract", return_value={"text": "Mock Content", "thumbnail_path": None}):
+        with patch("sidecar_tagger.sdk.llm_client.LLMClient.generate_metadata", return_value=mock_llm_response):
             processor.process_files([mock_pdf])
     
     assert os.path.exists(temp_sidecar)
@@ -117,9 +117,9 @@ def test_cache_hit_logic(mock_pdf, mock_llm_response):
         "tags": ["cached"]
     }
     
-    with patch("sdk.parsers.PdfParser.extract", return_value={"text": "Same Content"}):
-        with patch("sdk.embeddings_client.LocalEmbeddings.generate_vector", return_value=fake_vector):
-            with patch("sdk.llm_client.LLMClient.generate_metadata") as mock_llm:
+    with patch("sidecar_tagger.sdk.parsers.PdfParser.extract", return_value={"text": "Same Content"}):
+        with patch("sidecar_tagger.sdk.embeddings_client.LocalEmbeddings.generate_vector", return_value=fake_vector):
+            with patch("sidecar_tagger.sdk.llm_client.LLMClient.generate_metadata") as mock_llm:
                 metadata = processor.extract_metadata(mock_pdf)
                 # Ensure LLM was NEVER called due to cache hit
                 mock_llm.assert_not_called()

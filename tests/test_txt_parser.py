@@ -1,8 +1,8 @@
 import unittest
 import os
 import tempfile
-from sdk.parsers.txt_parser import TxtParser
-from sdk.exceptions import ParserError
+from sidecar_tagger.sdk.parsers.txt_parser import TxtParser
+from sidecar_tagger.sdk.exceptions import ParserError
 
 class TestTxtParser(unittest.TestCase):
     def setUp(self):

@@ -5,8 +5,8 @@ import os
 import pytest
 import logging
 from unittest.mock import patch, MagicMock
-from sdk.config import AnalysisLevel, ProcessorConfig
-from sdk.processor import MetadataProcessor
+from sidecar_tagger.sdk.config import AnalysisLevel, ProcessorConfig
+from sidecar_tagger.sdk.processor import MetadataProcessor
 
 # Disable logging during tests
 logging.disable(logging.CRITICAL)
@@ -194,7 +194,7 @@ class TestLayerExecution:
         processor = MetadataProcessor(config=config)
         
         # Mock all components to track which are called
-        with patch("sdk.utils.hashing.calculate_sha256", return_value="new_hash_123"):
+        with patch("sidecar_tagger.sdk.utils.hashing.calculate_sha256", return_value="new_hash_123"):
             with patch.object(processor.os_extractor, "extract") as mock_extract:
                 mock_extract.return_value = MagicMock(
                     filename="test.txt",

@@ -41,10 +41,10 @@ dev = [
 ]
 
 [project.scripts]
-sidecar-tag = "cli.main:main"
+sidecar-tag = "sidecar_tagger.cli.main:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cli", "sdk"]
+packages = ["sidecar_tagger"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

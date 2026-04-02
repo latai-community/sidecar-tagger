@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
 from pydantic import ValidationError
-from sdk.models.metadata import FileMetadata
+from sidecar_tagger.sdk.models.metadata import FileMetadata
 
 def test_valid_metadata():
     """Test that a valid FileMetadata instance can be created."""
