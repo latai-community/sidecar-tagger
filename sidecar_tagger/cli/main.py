@@ -6,9 +6,11 @@ LLM-Hints: This is the primary entry point for users. It handles recursive direc
 """
 
 import argparse
+import shutil
 import sys
 import os
 import logging
+import platform
 from typing import List
 from pathlib import Path
 
@@ -20,6 +22,17 @@ from sidecar_tagger.sdk.cleaner import SidecarCleaner
 
 # Logger configuration
 logger = logging.getLogger("SidecarCLI")
+
+def _warn_exiftool_missing() -> None:
+    """Check if ExifTool is available and print a warning to stderr if not."""
+    if shutil.which("exiftool") is None:
+        from sidecar_tagger.sdk.native_metadata.exiftool_client import _get_install_hint
+        print(
+            "WARNING: ExifTool is not installed. Layer 1 native metadata extraction will be skipped.\n"
+            "         This means lower confidence scores and more files falling through to Layer 2/3.\n"
+            f"         {_get_install_hint()}",
+            file=sys.stderr,
+        )
 
 SUPPORTED_EXTENSIONS = {
     '.pdf', '.xlsx', '.xls', '.jpg', '.jpeg', '.png', '.webp', '.bmp',
@@ -104,6 +117,8 @@ def create_parser() -> argparse.ArgumentParser:
 
 def run_process(args) -> None:
     """Execute the process subcommand."""
+    _warn_exiftool_missing()
+
     # Configure logging level based on verbosity (Pillar 4)
     log_level = logging.DEBUG if args.verbose else logging.INFO
     logging.getLogger().setLevel(log_level)
