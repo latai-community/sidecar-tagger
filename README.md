@@ -107,7 +107,7 @@ git clone https://github.com/latai-community/sidecar-tagger.git
 cd sidecar-tagger
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 ---

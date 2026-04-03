@@ -100,7 +100,7 @@ LLM_PROVIDER=gemini
 Ensure your virtual environment is activated, then run:
 
 ```bash
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 ---
@@ -148,7 +148,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 ### "ImportError: cannot import name..."
-If tests fail with an `ImportError`, ensure you have installed the requirements (`pip install -r requirements.txt`) and that you are running `pytest` from the project root with the virtual environment activated.
+If tests fail with an `ImportError`, ensure you have installed the requirements (`pip install -e ".[dev]"`) and that you are running `pytest` from the project root with the virtual environment activated.
 
 ### "GEMINI_API_KEY not found"
 Ensure your `.env` file is in the root directory and contains the correct variable name: `GEMINI_API_KEY`.
@@ -170,7 +170,7 @@ Then recreate your virtual environment:
 rm -rf .venv
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 ### "model not found" or "404" Error
